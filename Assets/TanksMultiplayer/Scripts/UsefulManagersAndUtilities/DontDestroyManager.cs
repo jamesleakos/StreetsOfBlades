@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Script that makes child objects non-destroyable on scene changes.

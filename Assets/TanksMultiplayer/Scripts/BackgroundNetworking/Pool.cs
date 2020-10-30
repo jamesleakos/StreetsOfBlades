@@ -9,7 +9,7 @@ using UnityEngine;
 using Mirror;
 using System;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Child class interacting and managed by the PoolManager.

@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     [InitializeOnLoad]
     public class ReviewWindowEditor : EditorWindow

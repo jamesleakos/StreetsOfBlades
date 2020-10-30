@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 #endif
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Manager handling the full in-app purchase workflow,

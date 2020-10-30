@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     //our about/help/support editor window
     public class AboutEditor : EditorWindow

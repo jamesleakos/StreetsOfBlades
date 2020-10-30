@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Orientates the gameobject this script is attached to to always face the camera.

@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Analytics;
 #endif
 
-namespace TanksMP
+namespace BladesOfBellevue
 { 
     /// <summary>
     /// Manager fo tracking user actions in-game and sending them to further processing

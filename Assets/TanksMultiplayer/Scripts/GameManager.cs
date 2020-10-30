@@ -10,7 +10,7 @@ using Mirror;
 using UnityEngine.Advertisements;
 #endif
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Manages game workflow and provides high-level access to networked logic during a game.
@@ -25,7 +25,7 @@ namespace TanksMP
         /// The local player instance spawned for this client.
         /// </summary>
         [HideInInspector]
-        public Player localPlayer;
+        public HumanPlayer localPlayer;
 
         /// <summary>
         /// Active game mode played in the current scene.
@@ -53,12 +53,6 @@ namespace TanksMP
         /// E.g. if score[0] = 2, team 0 scored 2 points.
         /// </summary>
         public SyncListInt score = new SyncListInt();
-
-        /// <summary>
-        /// Networked list storing Collectible pickups/drops.
-        /// Each entry is of type CollectibleState.
-        /// </summary>
-        public SyncListCollectible collects = new SyncListCollectible();
 
         /// <summary>
         /// The maximum amount of kills to reach before ending the game.
@@ -142,7 +136,6 @@ namespace TanksMP
             //maybe some display updates are called twice then which isn't too bad
             size.Callback += ui.OnTeamSizeChanged;
             score.Callback += ui.OnTeamScoreChanged;
-            collects.Callback += OnCollectibleStateChanged;
             //call the hooks manually for the first time, for each team
             for (int i = 0; i < teams.Length; i++) ui.OnTeamSizeChanged(SyncListInt.Operation.OP_SET, i, 0, 0);
             for(int i = 0; i < teams.Length; i++) ui.OnTeamScoreChanged(SyncListInt.Operation.OP_SET, i, 0, 0);
@@ -152,9 +145,6 @@ namespace TanksMP
         
         void Start()
         {
-            //same as in OnStartClient(), but Collectibles have an additional initialization pass referencing their spawner
-            //because of this, their initialization is not ready in OnStartClient() yet so we call this one pass later here
-            for (int i = 0; i < collects.Count; i++) OnCollectibleStateChanged(SyncListCollectible.Operation.OP_SET, i);
         }
 
 
@@ -276,80 +266,6 @@ namespace TanksMP
             ui.OnTeamScoreChanged(SyncList<int>.Operation.OP_ADD, teamIndex, 0, 0);
         }
 
-
-        /// <summary>
-        /// Add Collectible to the networked buffered list for tracking it on all clients. This method actually
-        /// checks whether the Collectible is existent already and then modifies that entry, before adding it.
-        /// The object ID has to be assigned in all cases, but the other parameters depend on the state.
-        /// </summary>
-        public int AddBufferedCollectible(uint id, Vector3 position, uint tarId)
-        {
-            //find existing index, if any
-            int index = collects.Count;
-            for(int i = 0; i < collects.Count; i++)
-            {
-                if(collects[i].objId == id)
-                {
-                    index = i;
-                    break;
-                }
-            }
-
-            //create new state with variables passed in
-            CollectibleState state = new CollectibleState
-            {
-                objId = id,
-                pos = position,
-                targetId = tarId
-            };
-
-            //modify or add new entry to the list
-            if (index < collects.Count) collects[index] = state;
-            else collects.Add(state);
-
-            //return index that was modified in this operation
-            return index;
-        }
-
-
-        /// <summary>
-        /// Overload for Callback without additional parameters/empty state. See below.
-        /// </summary>
-        public void OnCollectibleStateChanged(SyncList<CollectibleState>.Operation op, int index)
-        {
-            CollectibleState emptyState = new CollectibleState();
-            OnCollectibleStateChanged(op, index, emptyState, emptyState);
-        }
-
-
-        /// <summary>
-        /// Method called by the SyncList operation over the Network when its content changes.
-        /// This is an implementation for changes to the buffered Collectibles, updating their position and assignment.
-        /// Parameters: type of operation, index of Collectible which received updates.
-        /// </summary>
-        public void OnCollectibleStateChanged(SyncList<CollectibleState>.Operation op, int index, CollectibleState oldValue, CollectibleState newValue)
-        {
-            //get reference by index
-            CollectibleState state = collects[index];
-            if (state.objId <= 0) return;
-
-            //get game object instance by network ID
-            GameObject obj = NetworkIdentity.spawned.ContainsKey(state.objId) ? NetworkIdentity.spawned[state.objId].gameObject : null;
-            if (obj == null) return;
-
-            //get Collectible component on that object
-            Collectible colComp = obj.GetComponent<Collectible>();
-            if(colComp == null) return;
-
-            //targetId is assigned: handle pickup on the corresponding player
-            //or position is not at origin: handle drop at that position
-            //otherwise when the entry has changed it got returned to its spawn position
-            if (state.targetId > 0) colComp.spawner.Pickup(state.targetId);
-            else if (state.pos != colComp.spawner.transform.position) colComp.spawner.Drop(state.pos);
-            else colComp.spawner.Return();
-        }
-
-
         /// <summary>
         /// Returns whether a team reached the maximum game score.
         /// </summary>
@@ -383,10 +299,10 @@ namespace TanksMP
         public void DisplayDeath(bool skipAd = false)
         {
             //get the player component that killed us
-            Player other = localPlayer;
+            HumanPlayer other = localPlayer;
             string killedByName = "YOURSELF";
             if(localPlayer.killedBy != null)
-                other = localPlayer.killedBy.GetComponent<Player>();
+                other = localPlayer.killedBy.GetComponent<HumanPlayer>();
 
             //suicide or regular kill?
             if (other != localPlayer)
@@ -479,11 +395,6 @@ namespace TanksMP
         /// The name of the team shown on game over.
         /// </summary>
         public string name;
-             
-        /// <summary>
-        /// The color of a team for UI and player prefabs.
-        /// </summary>   
-        public Material material;
             
         /// <summary>
         /// The spawn point of a team in the scene. In case it has a BoxCollider

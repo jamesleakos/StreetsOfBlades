@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// UI script for all elements, team events and user interactions in the game scene.
@@ -134,7 +134,7 @@ namespace TanksMP
             #endif
             
             //show killer name and colorize the name converting its team color to an HTML RGB hex value for UI markup
-            deathText.text = "KILLED BY\n<color=#" + ColorUtility.ToHtmlStringRGB(team.material.color) + ">" + playerName + "</color>";
+            deathText.text = "KILLED BY\n<color=#" + ColorUtility.ToHtmlStringRGB(Color.red) + ">" + playerName + "</color>";
         }
         
         
@@ -175,7 +175,7 @@ namespace TanksMP
             #endif
             
             //show winning team and colorize it by converting the team color to an HTML RGB hex value for UI markup
-            gameOverText.text = "TEAM <color=#" + ColorUtility.ToHtmlStringRGB(team.material.color) + ">" + team.name + "</color> WINS!";
+            gameOverText.text = "TEAM <color=#" + ColorUtility.ToHtmlStringRGB(Color.red) + ">" + team.name + "</color> WINS!";
         }
 
 

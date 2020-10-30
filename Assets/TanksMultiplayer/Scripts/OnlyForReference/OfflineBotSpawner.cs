@@ -7,7 +7,7 @@ using System.Collections;
 using UnityEngine;
 using Mirror;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {          
     /// <summary>
     /// Responsible for spawning AI bots when in offline mode, otherwise gets disabled.
@@ -46,7 +46,7 @@ namespace TanksMP
                 GameObject obj = (GameObject)GameObject.Instantiate(prefabs[randIndex], Vector3.zero, Quaternion.identity);
 
                 //let the local host determine the team assignment
-                Player p = obj.GetComponent<Player>();
+                HumanPlayer p = obj.GetComponent<HumanPlayer>();
                 p.teamIndex = GameManager.GetInstance().GetTeamFill();
 
                 //spawn bot across the simulated private network

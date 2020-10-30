@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Camera script for following the player or a different target transform.

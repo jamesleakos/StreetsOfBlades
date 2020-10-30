@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Custom implementation of the migration manager class.

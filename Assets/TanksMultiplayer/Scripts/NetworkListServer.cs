@@ -6,7 +6,7 @@ using Mirror;
 using Mirror.Cloud;
 using Mirror.Cloud.ListServerService;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// List server client implementation that adds, updates and removes games from the List Server.

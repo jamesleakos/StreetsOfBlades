@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// When attached to an gameobject containing ParticleSystems,

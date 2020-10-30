@@ -6,7 +6,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// This script is attached to a runtime-generated gameobject in the game scene,

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// UI script for all elements, settings and user interactions in the menu scene.

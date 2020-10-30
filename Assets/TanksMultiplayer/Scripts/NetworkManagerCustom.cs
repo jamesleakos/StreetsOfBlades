@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     /// <summary>
     /// Custom implementation of the Unity Networking NetworkManager class. This script is
@@ -204,7 +204,9 @@ namespace TanksMP
             //then try to get prefab of the registered spawnable prefabs in the NetworkManager inspector (Spawn Info section)
 	        GameObject playerObj = null;
             if(spawnPrefabs.Count > message.prefabId)
+            {
                 playerObj = spawnPrefabs[message.prefabId];
+            }
 
             //get the team value for this player
             int teamIndex = GameManager.GetInstance().GetTeamFill();
@@ -213,7 +215,7 @@ namespace TanksMP
 	        playerObj = (GameObject)Instantiate(playerObj, startPos, Quaternion.identity);
             
             //assign name (also in JoinMessage) and team to Player component
-            Player p = playerObj.GetComponent<Player>();
+            HumanPlayer p = playerObj.GetComponent<HumanPlayer>();
             p.myName = message.playerName;
             p.teamIndex = teamIndex;
             
@@ -238,15 +240,7 @@ namespace TanksMP
         /// </summary>
         public override void OnServerDisconnect(NetworkConnection conn)
         {   
-            Player p = conn.identity.gameObject.GetComponent<Player>();
-
-            Collectible[] collectibles = p.GetComponentsInChildren<Collectible>(true);
-            for (int i = 0; i < collectibles.Length; i++)
-            {
-                //let the player drop the Collectible
-                int changedIndex = GameManager.GetInstance().AddBufferedCollectible(collectibles[i].netId, p.gameObject.transform.position, 0);
-                GameManager.GetInstance().OnCollectibleStateChanged(SyncListCollectible.Operation.OP_SET, changedIndex);
-            }
+            HumanPlayer p = conn.identity.gameObject.GetComponent<HumanPlayer>();
 
             GameManager.GetInstance().size[p.teamIndex]--;
             GameManager.GetInstance().ui.OnTeamSizeChanged(SyncListInt.Operation.OP_REMOVEAT, p.teamIndex, 0, 0);

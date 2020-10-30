@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using System.Collections.Generic;
 
-namespace TanksMP
+namespace BladesOfBellevue
 {
     public class PluginSetup : EditorWindow
     {
