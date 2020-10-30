@@ -45,12 +45,14 @@ namespace BladesOfBellevue {
 
         #endregion
 
-        #region Assassination
+        #region Player Interaction
 
-        /// <summary>
-        /// Clip to play when assassinating.
-        /// </summary>
-        public AudioClip assassinationClip;
+        List<Player> pingedPlayers;
+        List<Player> overlapPlayers;
+        public Player clickedPlayer;
+
+        public GameObject targetPlayer;
+        public GameObject talkPlayer;
 
         #endregion
 
@@ -68,13 +70,12 @@ namespace BladesOfBellevue {
 
         #endregion
 
-        #region Target
+        #region Sounds
 
         /// <summary>
-        /// Target Player gameObject.
+        /// Clip to play when assassinating.
         /// </summary>
-        [HideInInspector]
-        public GameObject targetPlayer;
+        public AudioClip assassinationClip;
 
         #endregion
 
@@ -149,6 +150,11 @@ namespace BladesOfBellevue {
 
             CallUpdateDistrictVisuals();
 
+            if (Input.GetMouseButtonDown(1))
+            {
+                PingPlayers();
+            }
+
             #region New Movement Code
 
             if (Input.GetMouseButtonDown(0))
@@ -161,6 +167,92 @@ namespace BladesOfBellevue {
             #endregion
         }
 #endif
+        #endregion
+
+        #region Player Interaction
+
+        #region Selecting a player
+
+        protected void PingPlayers()
+        {
+            RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            List<Player> players = new List<Player>();
+
+            if (hits.Count() > 0)
+            {
+                foreach (var hit in hits)
+                {
+                    if (hit.collider != null)
+                    {
+                        if (hit.collider.tag == "Player")
+                        {
+                            players.Add(hit.collider.gameObject.GetComponent<Player>());
+                        }
+                    }
+                }
+
+                if (players.Count > 0)
+                {
+                    List<Player> protoOverlapPlayers = players.Intersect(overlapPlayers).ToList();
+                    if (protoOverlapPlayers.Count > 0)
+                    {
+                        overlapPlayers = new List<Player>(protoOverlapPlayers);
+                        pingedPlayers = new List<Player>(players);
+                        // its important that the right click comes after the assigning these new lists so that we can remove the selected players from overlap
+                        RightClickPlayer(PickClosestPlayer(protoOverlapPlayers));
+                    }
+                    else
+                    {
+                        List<Player> otherPlayers = players.Intersect(pingedPlayers).ToList();
+                        if (otherPlayers.Count > 0)
+                        {
+                            overlapPlayers = new List<Player>(otherPlayers);
+                            pingedPlayers = new List<Player>(players);
+                            RightClickPlayer(PickClosestPlayer(otherPlayers));
+                        }
+                        else
+                        {
+                            overlapPlayers = new List<Player>(players);
+                            pingedPlayers = new List<Player>(players);
+                            RightClickPlayer(PickClosestPlayer(players));
+                        }
+                    }
+                }
+            }
+        }
+
+        protected void RightClickPlayer(Player player)
+        {
+            clickedPlayer = player;
+            player.TurnOnInteractionMenu();
+        }
+
+        protected Player PickClosestPlayer(List<Player> players)
+        {
+            Player p = players[0];
+            float f = (p.gameObject.transform.position - Input.mousePosition).magnitude;
+            foreach (var player in players)
+            {
+                if ((player.gameObject.transform.position - Input.mousePosition).magnitude < f)
+                {
+                    p = player;
+                    f = (player.gameObject.transform.position - Input.mousePosition).magnitude;
+                }
+            }
+
+            overlapPlayers.Remove(p);
+
+            return p;
+        }
+
+        #endregion
+
+
+
+        // pick talk player - networked
+
+        // pick target player - networked
+
         #endregion
 
         #region Pathing and Movement

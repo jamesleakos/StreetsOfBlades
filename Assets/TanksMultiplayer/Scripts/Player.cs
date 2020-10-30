@@ -208,7 +208,15 @@ namespace BladesOfBellevue
 
         #region Stopping and Talking
 
-        //public void 
+        public void TurnOnInteractionMenu ()
+        {
+
+        }
+
+        public void TurnOffInteractMenu()
+        {
+
+        }
 
         #endregion
 
