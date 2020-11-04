@@ -47,7 +47,22 @@ namespace BladesOfBellevue
         //reference to this rigidbody
         #pragma warning disable 0649
         protected Rigidbody rb;
-        #pragma warning restore 0649
+#pragma warning restore 0649
+
+        #endregion
+
+        #region Behavior State
+
+        public enum PlayerBehaviorState
+        {
+            walking,
+            running,
+            standing,
+            dead
+        }
+
+        [SyncVar]
+        public PlayerBehaviorState playerBehaviorState;
 
         #endregion
 
@@ -55,27 +70,33 @@ namespace BladesOfBellevue
 
         // pathing
         protected PathManager pathManager;
-        public List<Node> path;
+        protected List<Node> path = new List<Node>();
 
         // movement
         protected Vector3 nextGoalPos;
         protected Vector3 finalGoalPos;
         protected Node finalGoalNode;
-        public int currentGoalNode;
+        protected int currentGoalNode;
 
-        public float moveSpeed = 1;
+        public float moveSpeed = 2;
 
         #endregion
 
+        [SyncVar]
+        public GameObject targetingPlayer;
+        [SyncVar]
+        public GameObject talkingPlayer;
+
         #region Teleporting
 
-        public bool teleporting = false;
-        public bool teleported = false;
-        public float teleportLength = 0.5f;
-        public float teleportTime;
-        public Node teleportBeginning;
-        public Node teleportDestination;
+        protected bool teleporting = false;
+        protected bool teleported = false;
+        protected float teleportLength = 0.5f;
+        protected float teleportTime;
+        protected Node teleportBeginning;
+        protected Node teleportDestination;
 
+        [HideInInspector]
         [SyncVar]
         public District currentDistrict;
 
@@ -106,6 +127,55 @@ namespace BladesOfBellevue
 
         #region Pathing and Movement
 
+        protected void MoveCharacter()
+        {
+            if (playerBehaviorState == PlayerBehaviorState.walking || playerBehaviorState == PlayerBehaviorState.running)
+            {
+                if (!teleporting)
+                {
+                    if (path.Count > 0)
+                    {
+                        if ((transform.position - nextGoalPos).magnitude > 0.1 && (transform.position - finalGoalPos).magnitude > 0.1)
+                        {
+                            transform.position = Vector3.MoveTowards(transform.position, nextGoalPos, moveSpeed * Time.deltaTime);
+                        }
+                        else
+                        {
+                            ReachedNextNode();
+                        }
+                    }
+                }
+                else
+                {
+                    if (!teleported)
+                    {
+                        transform.position = Vector3.MoveTowards(
+                            transform.position,
+                            teleportBeginning.teleporterNodeHelper.transform.position,
+                            moveSpeed * Time.deltaTime);
+                        if (Time.time > teleportTime)
+                        {
+                            Teleport();
+                        }
+                    }
+                    else
+                    {
+                        transform.position = Vector3.MoveTowards(
+                                                transform.position,
+                                                teleportDestination.transform.position,
+                                                moveSpeed * Time.deltaTime);
+                        if ((transform.position - teleportDestination.transform.position).magnitude < 0.1)
+                        {
+                            ReachedNextNode();
+                            teleporting = false;
+                            teleported = false;
+                        }
+                    }
+
+                }
+            }
+        }
+
         protected void RestartNodeLists()
         {
             currentGoalNode = 0;
@@ -120,52 +190,6 @@ namespace BladesOfBellevue
             var secondNotFirst = list2.Except(list1).ToList();
 
             return (firstNotSecond.Count == 0 && secondNotFirst.Count == 0);
-        }
-
-        protected void MoveCharacter()
-        {
-            if (!teleporting)
-            {
-                if (path.Count > 0)
-                {
-                    if ((transform.position - nextGoalPos).magnitude > 0.1 && (transform.position - finalGoalPos).magnitude > 0.1)
-                    {
-                        transform.position = Vector3.MoveTowards(transform.position, nextGoalPos, moveSpeed * Time.deltaTime);
-                    }
-                    else
-                    {
-                        ReachedNextNode();
-                    }
-                }
-            }
-            else
-            {
-                if (!teleported)
-                {
-                    transform.position = Vector3.MoveTowards(
-                        transform.position,
-                        teleportBeginning.teleporterNodeHelper.transform.position,
-                        moveSpeed * Time.deltaTime);
-                    if (Time.time > teleportTime)
-                    {
-                        Teleport();
-                    }
-                }
-                else
-                {
-                    transform.position = Vector3.MoveTowards(
-                                            transform.position,
-                                            teleportDestination.transform.position,
-                                            moveSpeed * Time.deltaTime);
-                    if ((transform.position - teleportDestination.transform.position).magnitude < 0.1)
-                    {
-                        ReachedNextNode();
-                        teleporting = false;
-                        teleported = false;
-                    }
-                }
-
-            }
         }
 
         protected virtual void ReachedNextNode()
@@ -206,16 +230,46 @@ namespace BladesOfBellevue
 
         #endregion
 
-        #region Stopping and Talking
+        #region Player Interaction
 
         public void TurnOnInteractionMenu ()
         {
-
+            gameObject.transform.Find("InteractionMenu").gameObject.SetActive(true);
         }
 
         public void TurnOffInteractMenu()
         {
+            gameObject.transform.Find("InteractionMenu").gameObject.SetActive(false);
+        }
 
+        public void TurnOnTalkMenu()
+        {
+            gameObject.transform.Find("TalkMenu").gameObject.SetActive(true);
+        }
+
+        public void TurnOffTalkMenu()
+        {
+            gameObject.transform.Find("TalkMenu").gameObject.SetActive(false);
+        }
+
+
+        // VIRTUAL METHODS
+
+        public virtual bool AskToStopToTalk(Player player)
+        {
+            return false;
+        }
+
+        public virtual void DismissFromTalking()
+        {
+            talkingPlayer = null;
+            TurnOffTalkMenu();
+            ChangePlayerBehavior(PlayerBehaviorState.walking);
+        }
+
+        public virtual void ChangePlayerBehavior(PlayerBehaviorState behavState)
+        {
+            playerBehaviorState = behavState;
         }
 
         #endregion
@@ -278,7 +332,13 @@ namespace BladesOfBellevue
 
         void OnDrawGizmos()
         {
-            Gizmos.color = Color.blue;
+            if (playerBehaviorState == PlayerBehaviorState.dead)
+            {
+                Gizmos.color = Color.red;
+            } else
+            {
+                Gizmos.color = Color.green;
+            }
 
             Gizmos.DrawWireCube(gameObject.transform.position, gameObject.transform.lossyScale);
         }

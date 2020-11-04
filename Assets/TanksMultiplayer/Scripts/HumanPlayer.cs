@@ -47,11 +47,14 @@ namespace BladesOfBellevue {
 
         #region Player Interaction
 
-        List<Player> pingedPlayers;
-        List<Player> overlapPlayers;
-        public Player clickedPlayer;
+        private List<Player> pingedPlayers = new List<Player>();
+        private List<Player> overlapPlayers = new List<Player>();
 
+        private Player clickedPlayer;
+
+        [SyncVar]
         public GameObject targetPlayer;
+        [SyncVar]
         public GameObject talkPlayer;
 
         #endregion
@@ -159,8 +162,10 @@ namespace BladesOfBellevue {
 
             if (Input.GetMouseButtonDown(0))
             {
-                UpdatePathToClick();
+                PingForLeftClickNodesAndButtons();
             }
+
+            CheckForPlayerInteraction();
 
             MoveCharacter();
 
@@ -170,6 +175,34 @@ namespace BladesOfBellevue {
         #endregion
 
         #region Player Interaction
+
+
+        private void CheckForPlayerInteraction()
+        {
+            if (!isServer) return;
+
+            if (targetPlayer != null)
+            {
+                if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < 1 && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
+                {
+                    targetPlayer.GetComponent<Player>().playerBehaviorState = PlayerBehaviorState.dead;
+                    Debug.Log("Player Killed");
+                }
+            }
+
+            if (talkPlayer != null)
+            {
+                if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < 1 && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
+                {
+                    bool result = talkPlayer.GetComponent<Player>().AskToStopToTalk(this);
+                    if (result)
+                    {
+                        Debug.Log("Stop aggreed to");
+                        ChangePlayerBehavior(PlayerBehaviorState.standing);
+                    }
+                }
+            }            
+        }
 
         #region Selecting a player
 
@@ -199,7 +232,7 @@ namespace BladesOfBellevue {
                         overlapPlayers = new List<Player>(protoOverlapPlayers);
                         pingedPlayers = new List<Player>(players);
                         // its important that the right click comes after the assigning these new lists so that we can remove the selected players from overlap
-                        RightClickPlayer(PickClosestPlayer(protoOverlapPlayers));
+                        RightClickPlayer(PickClosestPlayerToMouse(protoOverlapPlayers));
                     }
                     else
                     {
@@ -208,26 +241,38 @@ namespace BladesOfBellevue {
                         {
                             overlapPlayers = new List<Player>(otherPlayers);
                             pingedPlayers = new List<Player>(players);
-                            RightClickPlayer(PickClosestPlayer(otherPlayers));
+                            RightClickPlayer(PickClosestPlayerToMouse(otherPlayers));
                         }
                         else
                         {
                             overlapPlayers = new List<Player>(players);
                             pingedPlayers = new List<Player>(players);
-                            RightClickPlayer(PickClosestPlayer(players));
+                            RightClickPlayer(PickClosestPlayerToMouse(players));
                         }
                     }
                 }
+            } else
+            {
+                TurnOffClickedPlayerMenu();
+            }
+        }
+
+        protected void TurnOffClickedPlayerMenu()
+        {
+            if (clickedPlayer != null)
+            {
+                clickedPlayer.TurnOffInteractMenu();
             }
         }
 
         protected void RightClickPlayer(Player player)
         {
+            TurnOffClickedPlayerMenu();
             clickedPlayer = player;
             player.TurnOnInteractionMenu();
         }
 
-        protected Player PickClosestPlayer(List<Player> players)
+        protected Player PickClosestPlayerToMouse(List<Player> players)
         {
             Player p = players[0];
             float f = (p.gameObject.transform.position - Input.mousePosition).magnitude;
@@ -247,140 +292,81 @@ namespace BladesOfBellevue {
 
         #endregion
 
+        #region Pressing Buttons
 
-
-        // pick talk player - networked
-
-        // pick target player - networked
-
-        #endregion
-
-        #region Pathing and Movement
-
-        protected void UpdatePathToClick()
+        protected void InteractionButtonSelection(List<PlayerInteractionButton> playerInteractionButtons)
         {
-            RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hits.Count() > 0)
+            PlayerInteractionButton buttonToClick = PickClosestButtonToMouse(playerInteractionButtons);
+
+            if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.target)
             {
-                Node selectedNode = null;
-                bool hitSelected = false;
-                foreach (var hit in hits)
-                {
-                    if (hit.collider != null)
-                    {
-                        if (hit.collider.tag == "Node" || hit.collider.tag == "TeleporterHelper")
-                        {
-                            Node node;
-                            if (hit.collider.tag == "TeleporterHelper")
-                            {
-                                node = hit.collider.gameObject.GetComponent<TeleporterNodeHelper>().myNode;
-                                if ((node.transform.position - transform.position).magnitude <= 1)
-                                {
-                                    teleporting = true;
-                                    teleportTime = Time.time + teleportLength;
-                                    teleportBeginning = node;
-                                    teleportDestination = node.teleporterDestinationNode;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                node = hit.collider.gameObject.GetComponent<Node>();
-                            }
-                            if (node != null)
-                            {
-                                if (node.district == currentDistrict)
-                                {
-                                    if (!hitSelected)
-                                    {
-                                        selectedNode = node;
-                                        hitSelected = true;
-                                    }
-                                    else
-                                    {
-                                        if (hit.collider.transform.position.y > selectedNode.transform.position.y)
-                                        {
-                                            selectedNode = node;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (hitSelected)
-                {
-                    Node goalNode = selectedNode;
-                    Node currentNode = pathManager.FindClosestNode(transform.position);
-                    if (CompareLists(goalNode.neighbors, currentNode.neighbors) && currentNode.nodeType == Node.NodeType.filler)
-                    {
-                        path.Clear();
-                        path.Add(goalNode);
-                        RestartNodeLists();
-                    }
-                    else
-                    {
-                        path = pathManager.FindShortestPath(selectedNode.gameObject.transform.position);
-                        if (path.Count > 0)
-                        {
-                            RestartNodeLists();
-                        }
-                    }
-                }
+                CmdSetTarget(clickedPlayer.gameObject);
+                clickedPlayer.TurnOffInteractMenu();
+
+            } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.talk)
+            {
+                CmdSetTalk(clickedPlayer.gameObject);
+                clickedPlayer.TurnOffInteractMenu();
+
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.dismiss)
+            {
+                //clickedPlayer.TurnOffTalkMenu();
+                CmdSetDismiss(clickedPlayer.gameObject);
+
             }
         }
 
-        #endregion
+        protected PlayerInteractionButton PickClosestButtonToMouse(List<PlayerInteractionButton> buttons)
+        {
+            PlayerInteractionButton b = buttons[0];
+            float f = (b.gameObject.transform.position - Input.mousePosition).magnitude;
+            foreach (var button in buttons)
+            {
+                if ((button.gameObject.transform.position - Input.mousePosition).magnitude < f)
+                {
+                    b = button;
+                    f = (button.gameObject.transform.position - Input.mousePosition).magnitude;
+                }
+            }
 
-        #region Teleporting
+            return b;
+        }
 
         [Command]
-        private void CmdChangeDistrict(District district)
+        private void CmdSetTarget(GameObject p)
         {
-            currentDistrict = district;
-        }
-
-        private void CallUpdateDistrictVisuals()
-        {
-            if (!isLocalPlayer) return;
-
-            List<DistrictVisuals> districtVisuals = GameObject.FindObjectsOfType<DistrictVisuals>().ToList();
-            foreach (var dv in districtVisuals)
+            if (targetPlayer != null)
             {
-                if (dv.district == currentDistrict)
-                {
-                    dv.gameObject.GetComponent<SpriteRenderer>().enabled = true;
-                    mainCamera.transform.position = new Vector3(dv.gameObject.transform.position.x, dv.gameObject.transform.position.y, mainCamera.transform.position.z);
-                }
-                else
-                {
-                    dv.gameObject.GetComponent<SpriteRenderer>().enabled = false;
-                }
+                targetPlayer.GetComponent<Player>().targetingPlayer = null;
             }
-
-            List<Player> players = GameObject.FindObjectsOfType<Player>().ToList();
-            foreach (var player in players)
-            {
-                if (player.currentDistrict == currentDistrict)
-                {
-                    player.gameObject.transform.Find("Mario").gameObject.SetActive(true);
-                }
-                else
-                {
-                    player.gameObject.transform.Find("Mario").gameObject.SetActive(false);
-                }
-            }
+            targetPlayer = p;
+            p.GetComponent<Player>().targetingPlayer = gameObject;
         }
 
-        public override void Teleport()
+        [Command]
+        private void CmdSetTalk(GameObject p)
         {
-            base.Teleport();
-            CmdChangeDistrict(teleportDestination.district);
+            talkPlayer = p;
+            p.GetComponent<Player>().talkingPlayer = gameObject;
         }
+
+        [Command]
+        private void CmdSetDismiss(GameObject p)
+        {
+            ChangePlayerBehavior(PlayerBehaviorState.walking);
+            talkPlayer = null;
+            clickedPlayer = null;
+            p.GetComponent<Player>().talkingPlayer = null;
+            p.GetComponent<Player>().DismissFromTalking();
+        }
+
 
         #endregion
 
-        #region Iteracting with Players
+        #region Old Interacting with Players
+
+
 
         //shoots a bullet in the direction passed in
         //we do not rely on the current turret rotation here, because we send the direction
@@ -570,6 +556,156 @@ namespace BladesOfBellevue {
         {
             //display game over window
             GameManager.GetInstance().DisplayGameOver(teamIndex);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Pathing and Movement
+
+        protected void PingForLeftClickNodesAndButtons()
+        {
+            RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hits.Count() > 0)
+            {
+                List<Node> nodesClicked = new List<Node>();
+                List<TeleporterNodeHelper> teleporterNodeHelpers = new List<TeleporterNodeHelper>();
+                List<PlayerInteractionButton> playerInteractionButtonsClicked = new List<PlayerInteractionButton>();
+
+                foreach (var hit in hits)
+                {
+                    if (hit.collider != null)
+                    {
+                        if (hit.collider.tag == "Node")
+                        {
+                            nodesClicked.Add(hit.collider.gameObject.GetComponent<Node>());
+                        } else if (hit.collider.tag == "TeleporterHelper")
+                        {
+                            teleporterNodeHelpers.Add(hit.collider.gameObject.GetComponent<TeleporterNodeHelper>());
+                        } else if (hit.collider.tag == "PlayerInteractionButton")
+                        {
+                            playerInteractionButtonsClicked.Add(hit.collider.gameObject.GetComponent<PlayerInteractionButton>());
+                        } 
+                    }
+                }
+
+                if (playerInteractionButtonsClicked.Count > 0)
+                {
+                    InteractionButtonSelection(playerInteractionButtonsClicked);                    
+                } else 
+                {
+                    if (teleporterNodeHelpers.Count > 0)
+                    {
+                        foreach (var nodeHelper in teleporterNodeHelpers)
+                        {
+                            Node node = nodeHelper.gameObject.GetComponent<TeleporterNodeHelper>().myNode;
+                            if ((node.transform.position - transform.position).magnitude <= 1)
+                            {
+                                teleporting = true;
+                                teleportTime = Time.time + teleportLength;
+                                teleportBeginning = node;
+                                teleportDestination = node.teleporterDestinationNode;
+                                break;
+                            } else
+                            {
+                                nodesClicked.Add(node);
+                            }
+                        }
+                    }
+
+                    if (nodesClicked.Count > 0 && !teleporting)
+                    {
+                        Node selectedNode = null;
+
+                        foreach (Node node in nodesClicked)
+                        {
+                            if (node.district == currentDistrict)
+                            {
+                                if (selectedNode == null)
+                                {
+                                    selectedNode = node;
+                                }
+                                else
+                                {
+                                    if (node.gameObject.transform.position.y > selectedNode.transform.position.y)
+                                    {
+                                        selectedNode = node;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (selectedNode != null)
+                        {
+                            Node goalNode = selectedNode;
+                            Node currentNode = pathManager.FindClosestNode(transform.position);
+                            if (CompareLists(goalNode.neighbors, currentNode.neighbors) && currentNode.nodeType == Node.NodeType.filler)
+                            {
+                                path.Clear();
+                                path.Add(goalNode);
+                                RestartNodeLists();
+                            }
+                            else
+                            {
+                                path = pathManager.FindShortestPath(selectedNode.gameObject.transform.position);
+                                if (path.Count > 0)
+                                {
+                                    RestartNodeLists();
+                                }
+                            }
+                        }
+                    }                        
+                }
+            }
+        }
+
+        #endregion
+
+        #region Teleporting
+
+        [Command]
+        private void CmdChangeDistrict(District district)
+        {
+            currentDistrict = district;
+        }
+
+        private void CallUpdateDistrictVisuals()
+        {
+            if (!isLocalPlayer) return;
+
+            List<DistrictVisuals> districtVisuals = GameObject.FindObjectsOfType<DistrictVisuals>().ToList();
+            foreach (var dv in districtVisuals)
+            {
+                if (dv.district == currentDistrict)
+                {
+                    dv.gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                    mainCamera.transform.position = new Vector3(dv.gameObject.transform.position.x, dv.gameObject.transform.position.y, mainCamera.transform.position.z);
+                }
+                else
+                {
+                    dv.gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                }
+            }
+
+            List<Player> players = GameObject.FindObjectsOfType<Player>().ToList();
+            foreach (var player in players)
+            {
+                if (player.currentDistrict == currentDistrict)
+                {
+                    player.gameObject.transform.Find("VisualComponents").gameObject.SetActive(true);
+                }
+                else
+                {
+                    player.gameObject.transform.Find("VisualComponents").gameObject.SetActive(false);
+                }
+            }
+        }
+
+        public override void Teleport()
+        {
+            base.Teleport();
+            CmdChangeDistrict(teleportDestination.district);
         }
 
         #endregion
