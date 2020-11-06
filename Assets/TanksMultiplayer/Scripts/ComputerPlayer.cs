@@ -17,9 +17,11 @@ namespace BladesOfBellevue
             ChooseNewPath();
         }
         // Update is called once per frame
-        [Server]
+
         void Update()
         {
+            if (!isServer) return;
+
             MoveCharacter();
             if (path.Count() == 0 || (transform.position - finalGoalPos).magnitude <= 0.1)
             {
@@ -71,8 +73,9 @@ namespace BladesOfBellevue
 
         public override bool AskToStopToTalk(Player player)
         {
+            Debug.Log("AskToStopToTalk triggered");
             ChangePlayerBehavior(PlayerBehaviorState.standing);
-            TurnOnTalkMenu();
+            SetTalkMenuOn();
             return true;
         }
 

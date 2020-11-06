@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
 using System.Linq;
+using TMPro;
 
 namespace BladesOfBellevue
 {          
@@ -51,6 +52,67 @@ namespace BladesOfBellevue
 
         #endregion
 
+        #region Character Type
+
+        [SerializeField]
+        private TextMeshPro nameText;
+
+        public enum CitizenType
+        {
+            waif,
+            merchant,
+            trader,
+            noble,
+            farmer,
+            seer,
+            monk,
+            beggar
+        }
+
+        public CitizenType citizenType;
+
+        public enum CitizenColor
+        {
+            blue,
+            red,
+            green
+        }
+
+        public CitizenColor citizenColor;
+
+        public GameObject aliveBody;
+
+        public GameObject deadBody;
+
+        #endregion
+
+        #region Interaction Buttons and Systems
+
+        [Space]
+        [Header("Interaction Objects")]
+
+        [SerializeField]
+        private GameObject talkSelectedCircle;
+
+        [SerializeField]
+        private GameObject targetSelectedCircle;
+
+        [SerializeField]
+        private GameObject canKillCircle;
+
+        [SerializeField]
+        private GameObject rightClickMenu;
+
+        [SerializeField]
+        private GameObject talkMenu;
+        #endregion
+
+        #region Interaction
+
+        public float talkDistance = 1.5f;
+
+        #endregion
+
         #region Behavior State
 
         public enum PlayerBehaviorState
@@ -82,8 +144,10 @@ namespace BladesOfBellevue
 
         #endregion
 
+        [HideInInspector]
         [SyncVar]
         public GameObject targetingPlayer;
+        [HideInInspector]
         [SyncVar]
         public GameObject talkingPlayer;
 
@@ -121,6 +185,9 @@ namespace BladesOfBellevue
         {
             pathManager = gameObject.transform.GetComponent<PathManager>();
             rb = GetComponent<Rigidbody>();
+            ClearAllMenus();
+            aliveBody.SetActive(true);
+            deadBody.SetActive(false);
         }
 
         #endregion
@@ -232,27 +299,7 @@ namespace BladesOfBellevue
 
         #region Player Interaction
 
-        public void TurnOnInteractionMenu ()
-        {
-            gameObject.transform.Find("InteractionMenu").gameObject.SetActive(true);
-        }
-
-        public void TurnOffInteractMenu()
-        {
-            gameObject.transform.Find("InteractionMenu").gameObject.SetActive(false);
-        }
-
-        public void TurnOnTalkMenu()
-        {
-            gameObject.transform.Find("TalkMenu").gameObject.SetActive(true);
-        }
-
-        public void TurnOffTalkMenu()
-        {
-            gameObject.transform.Find("TalkMenu").gameObject.SetActive(false);
-        }
-
-
+     
         // VIRTUAL METHODS
 
         public virtual bool AskToStopToTalk(Player player)
@@ -263,13 +310,68 @@ namespace BladesOfBellevue
         public virtual void DismissFromTalking()
         {
             talkingPlayer = null;
-            TurnOffTalkMenu();
+            ClearAllMenus();
             ChangePlayerBehavior(PlayerBehaviorState.walking);
         }
 
         public virtual void ChangePlayerBehavior(PlayerBehaviorState behavState)
         {
             playerBehaviorState = behavState;
+        }
+
+        public virtual void GetKilled ()
+        {
+            ChangePlayerBehavior(PlayerBehaviorState.dead);            
+        }
+
+        [ClientRpc]
+        protected virtual void RpcGetKilled()
+        {
+            aliveBody.SetActive(false);
+            deadBody.SetActive(true);
+        }
+
+        #endregion
+
+        #region Interaction Visuals
+
+        public void ClearAllMenus ()
+        {
+            talkSelectedCircle.SetActive(false);
+            targetSelectedCircle.SetActive(false);
+            canKillCircle.SetActive(false);
+            rightClickMenu.SetActive(false);
+            talkMenu.SetActive(false);
+        }
+
+        public void SetInteractionMenuOn()
+        {
+            ClearAllMenus();
+            rightClickMenu.SetActive(true);
+        }
+
+        public void SetTalkMenuOn()
+        {
+            ClearAllMenus();
+            talkMenu.gameObject.SetActive(true);
+        }
+
+        public void SetTargetSelectedCircle()
+        {
+            ClearAllMenus();
+            targetSelectedCircle.SetActive(true);
+        }
+
+        public void SetTalkSelectedCircle()
+        {
+            ClearAllMenus();
+            talkSelectedCircle.SetActive(true);
+        }
+
+        public void SetCanKillCircle()
+        {
+            ClearAllMenus();
+            canKillCircle.SetActive(true);
         }
 
         #endregion

@@ -6,6 +6,7 @@ public class PlayerInteractionButton : MonoBehaviour
 {
     public enum InteractionButtonType
     {
+        assassinate,
         target,
         talk,
         dismiss,

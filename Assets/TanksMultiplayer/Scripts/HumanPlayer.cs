@@ -47,6 +47,8 @@ namespace BladesOfBellevue {
 
         #region Player Interaction
 
+        public float killDistance = 3.0f;
+
         private List<Player> pingedPlayers = new List<Player>();
         private List<Player> overlapPlayers = new List<Player>();
 
@@ -54,6 +56,7 @@ namespace BladesOfBellevue {
 
         [SyncVar]
         public GameObject targetPlayer;
+
         [SyncVar]
         public GameObject talkPlayer;
 
@@ -124,6 +127,14 @@ namespace BladesOfBellevue {
 
             CmdChangeDistrict(currentDistrict);
 
+            List<Player> allPlayers = GameObject.FindObjectsOfType<Player>().ToList();
+            foreach (var player in allPlayers)
+            {
+                player.ClearAllMenus();
+                player.aliveBody.SetActive(true);
+                player.deadBody.SetActive(false);
+            }
+
             //initialize input controls for mobile devices
             //[0]=left joystick for movement, [1]=right joystick for shooting
 #if !UNITY_STANDALONE && !UNITY_WEBGL
@@ -146,53 +157,64 @@ namespace BladesOfBellevue {
             //skip further calls for remote clients
             if (!isLocalPlayer)
             {
+                ServerCheckForPlayerInteraction();
+
                 //keep turret rotation updated for all clients
                 OnHeadRotation(0, headRotation);
                 return;
             }
 
+
+            // THIS WILL ONLY BE CALLED FROM CLIENT
+
             CallUpdateDistrictVisuals();
 
+            PlayerInputs();
+
+            MoveCharacter();
+        }
+#endif
+        private void PlayerInputs()
+        {
             if (Input.GetMouseButtonDown(1))
             {
                 PingPlayers();
             }
-
-            #region New Movement Code
 
             if (Input.GetMouseButtonDown(0))
             {
                 PingForLeftClickNodesAndButtons();
             }
 
-            CheckForPlayerInteraction();
-
-            MoveCharacter();
-
-            #endregion
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.Space))
+            {
+                CmdKillPlayer();
+            }
         }
-#endif
+        
         #endregion
 
         #region Player Interaction
 
 
-        private void CheckForPlayerInteraction()
+        private void ServerCheckForPlayerInteraction()
         {
             if (!isServer) return;
 
             if (targetPlayer != null)
             {
-                if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < 1 && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
+                if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
                 {
-                    targetPlayer.GetComponent<Player>().playerBehaviorState = PlayerBehaviorState.dead;
-                    Debug.Log("Player Killed");
+                    targetPlayer.GetComponent<Player>().SetCanKillCircle();
+                } else
+                {
+                    targetPlayer.GetComponent<Player>().SetTargetSelectedCircle();
                 }
             }
 
             if (talkPlayer != null)
             {
-                if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < 1 && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
+                if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < talkDistance && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
                 {
                     bool result = talkPlayer.GetComponent<Player>().AskToStopToTalk(this);
                     if (result)
@@ -202,6 +224,20 @@ namespace BladesOfBellevue {
                     }
                 }
             }            
+        }
+
+        [Command]
+        private void CmdKillPlayer ()
+        {
+            if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
+            {
+                Player killedPlayer = targetPlayer.GetComponent<Player>();
+                killedPlayer.playerBehaviorState = PlayerBehaviorState.dead;
+                killedPlayer.GetKilled();
+                killedPlayer.ClearAllMenus();
+                targetPlayer = null;
+                Debug.Log("Player Killed");
+            }
         }
 
         #region Selecting a player
@@ -261,7 +297,7 @@ namespace BladesOfBellevue {
         {
             if (clickedPlayer != null)
             {
-                clickedPlayer.TurnOffInteractMenu();
+                clickedPlayer.ClearAllMenus();
             }
         }
 
@@ -269,7 +305,7 @@ namespace BladesOfBellevue {
         {
             TurnOffClickedPlayerMenu();
             clickedPlayer = player;
-            player.TurnOnInteractionMenu();
+            player.SetInteractionMenuOn();
         }
 
         protected Player PickClosestPlayerToMouse(List<Player> players)
@@ -300,20 +336,27 @@ namespace BladesOfBellevue {
 
             if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.target)
             {
+                if (targetPlayer != null)
+                {
+                    targetPlayer.GetComponent<Player>().ClearAllMenus();
+                }
                 CmdSetTarget(clickedPlayer.gameObject);
-                clickedPlayer.TurnOffInteractMenu();
+                clickedPlayer.SetTargetSelectedCircle();
 
             } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.talk)
             {
+                Debug.Log("Click is triggering on " + clickedPlayer.gameObject);
                 CmdSetTalk(clickedPlayer.gameObject);
-                clickedPlayer.TurnOffInteractMenu();
+                clickedPlayer.SetTalkSelectedCircle();
 
             }
             else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.dismiss)
             {
-                //clickedPlayer.TurnOffTalkMenu();
+                clickedPlayer.ClearAllMenus();
                 CmdSetDismiss(clickedPlayer.gameObject);
-
+            } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.assassinate)
+            {
+                CmdKillPlayer();
             }
         }
 
@@ -347,6 +390,7 @@ namespace BladesOfBellevue {
         [Command]
         private void CmdSetTalk(GameObject p)
         {
+            Debug.Log("this is the cmd set talk statement");
             talkPlayer = p;
             p.GetComponent<Player>().talkingPlayer = gameObject;
         }
