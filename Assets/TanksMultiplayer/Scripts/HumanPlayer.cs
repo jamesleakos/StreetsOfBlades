@@ -204,10 +204,12 @@ namespace BladesOfBellevue {
             {
                 if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
                 {
-                    targetPlayer.GetComponent<Player>().SetCanKillCircle();
+                    if (!canKill) targetPlayer.GetComponent<Player>().TargetSetCanKillCircle(gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                    canKill = true;
                 } else
                 {
-                    targetPlayer.GetComponent<Player>().SetTargetSelectedCircle();
+                    if (canKill) targetPlayer.GetComponent<Player>().TargetSetTargetSelectedCircle(gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                    canKill = false;
                 }
             }
 
@@ -233,7 +235,7 @@ namespace BladesOfBellevue {
                 Player killedPlayer = targetPlayer.GetComponent<Player>();
                 killedPlayer.playerBehaviorState = PlayerBehaviorState.dead;
                 killedPlayer.GetKilled();
-                killedPlayer.ClearAllMenus();
+                killedPlayer.RpcGetKilled();
                 targetPlayer = null;
                 Debug.Log("Player Killed");
             }

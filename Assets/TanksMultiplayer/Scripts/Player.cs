@@ -111,6 +111,8 @@ namespace BladesOfBellevue
 
         public float talkDistance = 1.5f;
 
+        public bool canKill;
+
         #endregion
 
         #region Behavior State
@@ -318,14 +320,27 @@ namespace BladesOfBellevue
             playerBehaviorState = behavState;
         }
 
+        [TargetRpc]
+        public void TargetSetCanKillCircle(NetworkConnection target)
+        {
+            SetCanKillCircle();
+        }
+
+        [TargetRpc]
+        public void TargetSetTargetSelectedCircle(NetworkConnection target)
+        {
+            SetTargetSelectedCircle();
+        }
+
         public virtual void GetKilled ()
         {
             ChangePlayerBehavior(PlayerBehaviorState.dead);            
         }
 
         [ClientRpc]
-        protected virtual void RpcGetKilled()
+        public virtual void RpcGetKilled()
         {
+            ClearAllMenus();
             aliveBody.SetActive(false);
             deadBody.SetActive(true);
         }
