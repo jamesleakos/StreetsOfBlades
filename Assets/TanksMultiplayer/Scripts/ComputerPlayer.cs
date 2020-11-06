@@ -75,8 +75,14 @@ namespace BladesOfBellevue
         {
             Debug.Log("AskToStopToTalk triggered");
             ChangePlayerBehavior(PlayerBehaviorState.standing);
-            SetTalkMenuOn();
+            TargetSetTalkMenuOn(player.gameObject.GetComponent<NetworkIdentity>().connectionToClient);
             return true;
+        }
+
+        [TargetRpc]
+        private void TargetSetTalkMenuOn (NetworkConnection target)
+        {
+            SetTalkMenuOn();
         }
 
         #endregion

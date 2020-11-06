@@ -310,7 +310,6 @@ namespace BladesOfBellevue
         public virtual void DismissFromTalking()
         {
             talkingPlayer = null;
-            ClearAllMenus();
             ChangePlayerBehavior(PlayerBehaviorState.walking);
         }
 

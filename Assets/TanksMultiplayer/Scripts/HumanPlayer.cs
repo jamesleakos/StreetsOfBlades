@@ -154,16 +154,15 @@ namespace BladesOfBellevue {
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
         protected void Update()
         {
+            ServerCheckForPlayerInteraction();
+
             //skip further calls for remote clients
             if (!isLocalPlayer)
             {
-                ServerCheckForPlayerInteraction();
-
                 //keep turret rotation updated for all clients
                 OnHeadRotation(0, headRotation);
                 return;
             }
-
 
             // THIS WILL ONLY BE CALLED FROM CLIENT
 
@@ -212,7 +211,7 @@ namespace BladesOfBellevue {
                 }
             }
 
-            if (talkPlayer != null)
+            if (talkPlayer != null && talkPlayer.GetComponent<Player>().playerBehaviorState != PlayerBehaviorState.standing)
             {
                 if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < talkDistance && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
                 {
@@ -345,15 +344,18 @@ namespace BladesOfBellevue {
 
             } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.talk)
             {
-                Debug.Log("Click is triggering on " + clickedPlayer.gameObject);
                 CmdSetTalk(clickedPlayer.gameObject);
                 clickedPlayer.SetTalkSelectedCircle();
 
             }
             else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.dismiss)
             {
-                clickedPlayer.ClearAllMenus();
-                CmdSetDismiss(clickedPlayer.gameObject);
+                if (talkPlayer != null)
+                {
+                    talkPlayer.GetComponent<Player>().ClearAllMenus();
+                    CmdSetDismiss(talkPlayer.gameObject);
+                }
+
             } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.assassinate)
             {
                 CmdKillPlayer();
