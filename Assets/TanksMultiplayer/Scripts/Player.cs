@@ -54,8 +54,7 @@ namespace BladesOfBellevue
 
         #region Character Type
 
-        [SerializeField]
-        private TextMeshPro nameText;
+        public TextMeshProUGUI nameText;
 
         public enum CitizenType
         {
@@ -66,7 +65,8 @@ namespace BladesOfBellevue
             farmer,
             seer,
             monk,
-            beggar
+            beggar,
+            spy
         }
 
         public CitizenType citizenType;
@@ -134,7 +134,7 @@ namespace BladesOfBellevue
 
         // pathing
         protected PathManager pathManager;
-        protected List<Node> path = new List<Node>();
+        public List<Node> path = new List<Node>();
 
         // movement
         protected Vector3 nextGoalPos;
@@ -155,14 +155,9 @@ namespace BladesOfBellevue
 
         #region Teleporting
 
-        protected bool teleporting = false;
-        protected bool teleported = false;
-        protected float teleportLength = 0.5f;
-        protected float teleportTime;
-        protected Node teleportBeginning;
-        protected Node teleportDestination;
+        public bool teleporting = false;
 
-        [HideInInspector]
+        //[HideInInspector]
         [SyncVar]
         public District currentDistrict;
 
@@ -200,52 +195,26 @@ namespace BladesOfBellevue
         {
             if (playerBehaviorState == PlayerBehaviorState.walking || playerBehaviorState == PlayerBehaviorState.running)
             {
-                if (!teleporting)
+                if (path.Count > 0)
                 {
-                    if (path.Count > 0)
+                    if ((transform.position - nextGoalPos).magnitude > 0.1 && (transform.position - finalGoalPos).magnitude > 0.1)
                     {
-                        if ((transform.position - nextGoalPos).magnitude > 0.1 && (transform.position - finalGoalPos).magnitude > 0.1)
-                        {
-                            transform.position = Vector3.MoveTowards(transform.position, nextGoalPos, moveSpeed * Time.deltaTime);
-                        }
-                        else
-                        {
-                            ReachedNextNode();
-                        }
-                    }
-                }
-                else
-                {
-                    if (!teleported)
-                    {
-                        transform.position = Vector3.MoveTowards(
-                            transform.position,
-                            teleportBeginning.teleporterNodeHelper.transform.position,
-                            moveSpeed * Time.deltaTime);
-                        if (Time.time > teleportTime)
-                        {
-                            Teleport();
-                        }
+                        transform.position = Vector3.MoveTowards(transform.position, nextGoalPos, moveSpeed * Time.deltaTime);
                     }
                     else
                     {
-                        transform.position = Vector3.MoveTowards(
-                                                transform.position,
-                                                teleportDestination.transform.position,
-                                                moveSpeed * Time.deltaTime);
-                        if ((transform.position - teleportDestination.transform.position).magnitude < 0.1)
-                        {
-                            ReachedNextNode();
-                            teleporting = false;
-                            teleported = false;
-                        }
+                        ReachedNextNode();
                     }
-
                 }
             }
         }
 
-        protected void RestartNodeLists()
+        public virtual void OnTeleport (Node node)
+        {
+            currentDistrict = node.district;
+        }
+
+        public void RestartNodeLists()
         {
             currentGoalNode = 0;
             nextGoalPos = path[0].transform.position;
@@ -261,18 +230,11 @@ namespace BladesOfBellevue
             return (firstNotSecond.Count == 0 && secondNotFirst.Count == 0);
         }
 
-        protected virtual void ReachedNextNode()
+        public virtual void ReachedNextNode()
         {
             if (path.Count > 0)
             {
-                if (path[currentGoalNode].nodeType == Node.NodeType.portal && !teleporting)
-                {
-                    teleporting = true;
-                    teleportTime = Time.time + teleportLength;
-                    teleportBeginning = path[currentGoalNode];
-                    teleportDestination = path[currentGoalNode].teleporterDestinationNode;
-                }
-                if ((transform.position - finalGoalPos).magnitude < 0.1)
+                if ((transform.position - finalGoalPos).magnitude < 0.1 || path.Count == 1)
                 {
                     path.Clear();
                 }
@@ -289,18 +251,7 @@ namespace BladesOfBellevue
 
         #endregion
 
-        #region Teleporting
-
-        public virtual void Teleport()
-        {
-            transform.position = teleportDestination.teleporterNodeHelper.transform.position;
-            teleported = true;
-        }
-
-        #endregion
-
         #region Player Interaction
-
      
         // VIRTUAL METHODS
 

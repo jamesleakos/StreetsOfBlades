@@ -17,7 +17,7 @@ MonoBehaviour:
   headRotation: 0
   head: {fileID: 3985815805060691442}
   killedBy: {fileID: 0}
-  nameText: {fileID: 0}
+  nameText: {fileID: 8733164432689520066}
   citizenType: 0
   citizenColor: 0
   aliveBody: {fileID: 2949208182822897743}
@@ -28,10 +28,13 @@ MonoBehaviour:
   rightClickMenu: {fileID: 7190624593588929223}
   talkMenu: {fileID: 7009307019110419193}
   talkDistance: 1.5
+  canKill: 0
   playerBehaviorState: 0
+  path: []
   moveSpeed: 2
   targetingPlayer: {fileID: 0}
   talkingPlayer: {fileID: 0}
+  teleporting: 0
   currentDistrict: 0
 --- !u!1001 &8485072282466040953
 PrefabInstance:
@@ -88,6 +91,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 836161169178928921, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 996905578527118393, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1039723081326626180, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
       propertyPath: interactionButtonType
@@ -101,7 +114,17 @@ PrefabInstance:
     - target: {fileID: 1588419027756711614, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4322028979587397055, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5755781883312513130, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6243884095390133989, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
@@ -174,3 +197,15 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 8485072282466040953}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8733164432689520066 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 933202312270078395, guid: f30ad63695c27504b8c2aa87564a6ccc,
+    type: 3}
+  m_PrefabInstance: {fileID: 8485072282466040953}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

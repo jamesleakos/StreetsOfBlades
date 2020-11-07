@@ -9,6 +9,13 @@ namespace BladesOfBellevue
         public District district;
 
         public Node myNode;
+
+        void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+
+            Gizmos.DrawWireCube(gameObject.transform.position, gameObject.transform.lossyScale);
+        }
     }
 }
 

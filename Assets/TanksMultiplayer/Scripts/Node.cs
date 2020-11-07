@@ -24,6 +24,8 @@ namespace BladesOfBellevue {
         // some lists
         public List<Node> neighbors;
 
+        public List<Player> teleportingPlayers = new List<Player>();
+
         // methods for PathManager
         public Node previous {
             get;
@@ -44,6 +46,44 @@ namespace BladesOfBellevue {
         }
         void Start()
         {
+        }
+
+        private void OnTriggerEnter2D(Collider2D col)
+        {
+            if (col.tag == "Player" && nodeType == NodeType.portal)
+            {
+                Player player = col.gameObject.GetComponent<Player>();
+                if (teleportingPlayers.Contains(player))
+                {
+                    HumanPlayer humanPlayer = player.gameObject.GetComponent<HumanPlayer>();
+                    if (humanPlayer != null)
+                    {
+                        humanPlayer.path.Clear();
+                        humanPlayer.path.Add(neighbors.Find(x => x.nodeType == NodeType.junction));
+                        humanPlayer.RestartNodeLists();
+                    }
+                } else
+                {
+                    player.teleporting = true;
+                    teleporterDestinationNode.teleportingPlayers.Add(player);
+                    player.ReachedNextNode();
+                    player.gameObject.transform.position = teleporterDestinationNode.gameObject.transform.position;
+                    player.OnTeleport(teleporterDestinationNode);
+                }
+            }
+        }
+
+        private void OnTriggerExit2D(Collider2D col)
+        {
+            if (col.tag == "Player")
+            {
+                Player player = col.gameObject.GetComponent<Player>();
+                if (teleportingPlayers.Contains(player))
+                {
+                    teleportingPlayers.Remove(player);
+                    player.teleporting = false;
+                }
+            }
         }
 
         void OnDrawGizmos()

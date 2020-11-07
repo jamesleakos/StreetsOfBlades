@@ -132,7 +132,7 @@ namespace BladesOfBellevue
             {
                 foreach (var neighbor in node.neighbors)
                 {
-                    if (!completedNodes.Contains(neighbor) && !(node.nodeType == Node.NodeType.portal && neighbor.nodeType == Node.NodeType.portal))
+                    if (!completedNodes.Contains(neighbor) && !(node.nodeType == Node.NodeType.portal || neighbor.nodeType == Node.NodeType.portal))
                     {
                         Vector3 distanceBetweenNodes = node.transform.position - neighbor.transform.position;
                         float nodePrefabWidth = 1.0f;

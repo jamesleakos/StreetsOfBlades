@@ -628,44 +628,36 @@ namespace BladesOfBellevue {
                         if (hit.collider.tag == "Node")
                         {
                             nodesClicked.Add(hit.collider.gameObject.GetComponent<Node>());
-                        } else if (hit.collider.tag == "TeleporterHelper")
+                        }
+                        else if (hit.collider.tag == "TeleporterHelper")
                         {
                             teleporterNodeHelpers.Add(hit.collider.gameObject.GetComponent<TeleporterNodeHelper>());
-                        } else if (hit.collider.tag == "PlayerInteractionButton")
+                        }
+                        else if (hit.collider.tag == "PlayerInteractionButton")
                         {
                             playerInteractionButtonsClicked.Add(hit.collider.gameObject.GetComponent<PlayerInteractionButton>());
-                        } 
+                        }
                     }
                 }
 
                 if (playerInteractionButtonsClicked.Count > 0)
                 {
-                    InteractionButtonSelection(playerInteractionButtonsClicked);                    
-                } else 
+                    InteractionButtonSelection(playerInteractionButtonsClicked);
+                }
+                else
                 {
-                    if (teleporterNodeHelpers.Count > 0)
+                    if (teleporterNodeHelpers.Count > 0 && !teleporting)
                     {
                         foreach (var nodeHelper in teleporterNodeHelpers)
                         {
                             Node node = nodeHelper.gameObject.GetComponent<TeleporterNodeHelper>().myNode;
-                            if ((node.transform.position - transform.position).magnitude <= 1)
-                            {
-                                teleporting = true;
-                                teleportTime = Time.time + teleportLength;
-                                teleportBeginning = node;
-                                teleportDestination = node.teleporterDestinationNode;
-                                break;
-                            } else
-                            {
-                                nodesClicked.Add(node);
-                            }
+                            nodesClicked.Add(node);
                         }
                     }
 
-                    if (nodesClicked.Count > 0 && !teleporting)
+                    if (nodesClicked.Count > 0)
                     {
                         Node selectedNode = null;
-
                         foreach (Node node in nodesClicked)
                         {
                             if (node.district == currentDistrict)
@@ -703,7 +695,7 @@ namespace BladesOfBellevue {
                                 }
                             }
                         }
-                    }                        
+                    }
                 }
             }
         }
@@ -711,6 +703,11 @@ namespace BladesOfBellevue {
         #endregion
 
         #region Teleporting
+
+        public override void OnTeleport(Node node)
+        {
+            CmdChangeDistrict(node.district);
+        }
 
         [Command]
         private void CmdChangeDistrict(District district)
@@ -748,12 +745,6 @@ namespace BladesOfBellevue {
                     player.gameObject.transform.Find("VisualComponents").gameObject.SetActive(false);
                 }
             }
-        }
-
-        public override void Teleport()
-        {
-            base.Teleport();
-            CmdChangeDistrict(teleportDestination.district);
         }
 
         #endregion

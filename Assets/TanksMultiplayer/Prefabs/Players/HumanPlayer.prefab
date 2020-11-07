@@ -17,7 +17,7 @@ MonoBehaviour:
   headRotation: 0
   head: {fileID: 5254913268755791166}
   killedBy: {fileID: 0}
-  nameText: {fileID: 0}
+  nameText: {fileID: 472644152163800334}
   citizenType: 0
   citizenColor: 0
   aliveBody: {fileID: 6291797693316382851}
@@ -28,6 +28,7 @@ MonoBehaviour:
   rightClickMenu: {fileID: 2051248230068718091}
   talkMenu: {fileID: 2232459425741914677}
   talkDistance: 1.5
+  canKill: 0
   playerBehaviorState: 0
   moveSpeed: 2
   targetingPlayer: {fileID: 0}
@@ -203,3 +204,15 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 755564415462274229}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &472644152163800334 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 933202312270078395, guid: f30ad63695c27504b8c2aa87564a6ccc,
+    type: 3}
+  m_PrefabInstance: {fileID: 755564415462274229}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

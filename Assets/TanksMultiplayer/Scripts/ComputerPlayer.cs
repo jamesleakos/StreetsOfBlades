@@ -29,7 +29,7 @@ namespace BladesOfBellevue
             }
         }
 
-        protected override void ReachedNextNode()
+        public override void ReachedNextNode()
         {
             base.ReachedNextNode();
             if (path.Count() == 0)
@@ -38,11 +38,20 @@ namespace BladesOfBellevue
             }
         }       
 
-        private void ChooseNewPath()
+        public Node ChooseGoalNode ()
         {
             List<Node> nodes = GameObject.FindObjectsOfType<Node>().ToList();
-            List<Node> filteredNodes = nodes.Where(x => x.nodeType == Node.NodeType.junction).ToList();
+            List<Node> filteredNodes = nodes.FindAll(x => x.nodeType != Node.NodeType.portal);
             Node newNode = filteredNodes[Random.Range(0, filteredNodes.Count)];
+
+            // Here we can place logic for choosing Node by type of Character
+
+            return newNode;
+        }
+
+        private void ChooseNewPath()
+        {
+            Node newNode = ChooseGoalNode();
 
             path = pathManager.FindShortestPath(newNode.gameObject.transform.position);
             if (path.Count > 0)
@@ -58,10 +67,9 @@ namespace BladesOfBellevue
             currentDistrict = district;
         }
 
-        public override void Teleport()
+        public override void OnTeleport (Node node)
         {
-            base.Teleport();
-            ChangeDistrict(teleportDestination.district);
+            base.OnTeleport(node);
         }
 
         #endregion
