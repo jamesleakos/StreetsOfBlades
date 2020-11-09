@@ -4,8 +4,9 @@ using UnityEngine;
 
 namespace BladesOfBellevue
 {
-    public class DistrictVisuals : MonoBehaviour
+    public class PlayerChangeClothesButton : PlayerInteractionButton
     {
-        public DistrictType district;
+        public Player.CitizenType citizenType;
     }
 }
+

@@ -19,7 +19,7 @@ namespace BladesOfBellevue {
 
         public NodeType nodeType;
 
-        public District district;
+        public DistrictType district;
 
         // some lists
         public List<Node> neighbors;

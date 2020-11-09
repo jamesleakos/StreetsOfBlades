@@ -13,7 +13,8 @@ public class PlayerInteractionButton : MonoBehaviour
         news,
         payWaifToFollow,
         payMonkToShout,
-        payBeggarToShout
+        payBeggarToShout,
+        changeClothes
     }
 
     public InteractionButtonType interactionButtonType;

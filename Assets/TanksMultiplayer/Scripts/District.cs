@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BladesOfBellevue
 {
-    public enum District
+    public enum DistrictType
     {
         monastery,
         market,

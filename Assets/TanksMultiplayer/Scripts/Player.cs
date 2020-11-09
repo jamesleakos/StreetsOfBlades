@@ -18,7 +18,7 @@ namespace BladesOfBellevue
 
         #region Variables
 
-        #region Head Rotation
+        #region Scale and Appearance
 
         [HideInInspector]
         [SyncVar(hook = "OnHeadRotation")]
@@ -119,9 +119,9 @@ namespace BladesOfBellevue
 
         public enum PlayerBehaviorState
         {
-            walking,
-            running,
+            moving,
             standing,
+            talking,
             dead
         }
 
@@ -142,7 +142,12 @@ namespace BladesOfBellevue
         protected Node finalGoalNode;
         protected int currentGoalNode;
 
-        public float moveSpeed = 2;
+        public float walkSpeed = 2;
+        public float runSpeed = 5;
+
+        [HideInInspector]
+        [SyncVar]
+        public bool amRunning = false;
 
         #endregion
 
@@ -159,7 +164,7 @@ namespace BladesOfBellevue
 
         //[HideInInspector]
         [SyncVar]
-        public District currentDistrict;
+        public DistrictType currentDistrict;
 
         #endregion
 
@@ -187,19 +192,38 @@ namespace BladesOfBellevue
             deadBody.SetActive(false);
         }
 
+        protected virtual void Update()
+        {
+            CheckForAnimationState();
+        }
+
+        private void CheckForAnimationState ()
+        {
+            if (false)
+            {
+                RpcSwitchAnimationState();
+            }
+        }
+
+        [ClientRpc]
+        public void RpcSwitchAnimationState()
+        {
+            //Debug.Log("here we animate");
+        }
+
         #endregion
 
         #region Pathing and Movement
 
         protected void MoveCharacter()
         {
-            if (playerBehaviorState == PlayerBehaviorState.walking || playerBehaviorState == PlayerBehaviorState.running)
+            if (playerBehaviorState == PlayerBehaviorState.moving)
             {
                 if (path.Count > 0)
                 {
                     if ((transform.position - nextGoalPos).magnitude > 0.1 && (transform.position - finalGoalPos).magnitude > 0.1)
                     {
-                        transform.position = Vector3.MoveTowards(transform.position, nextGoalPos, moveSpeed * Time.deltaTime);
+                        transform.position = Vector3.MoveTowards(transform.position, nextGoalPos, (amRunning ? runSpeed : walkSpeed) * Time.deltaTime);
                     }
                     else
                     {
@@ -263,7 +287,7 @@ namespace BladesOfBellevue
         public virtual void DismissFromTalking()
         {
             talkingPlayer = null;
-            ChangePlayerBehavior(PlayerBehaviorState.walking);
+            ChangePlayerBehavior(PlayerBehaviorState.moving);
         }
 
         public virtual void ChangePlayerBehavior(PlayerBehaviorState behavState)
@@ -351,7 +375,7 @@ namespace BladesOfBellevue
 
         #endregion
 
-        #region Rotating Head
+        #region Appearance and Scale
 
         //rotates turret to the direction passed in
         protected void RotateHead(Vector2 direction = default(Vector2))

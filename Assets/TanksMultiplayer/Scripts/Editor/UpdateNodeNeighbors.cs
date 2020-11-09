@@ -120,10 +120,10 @@ namespace BladesOfBellevue
             List<Node> completedNodes = new List<Node>();
 
             List<GameObject> districtNodeHolders = new List<GameObject>();
-            for (int i = 0; i < System.Enum.GetNames(typeof(District)).Length; i++)
+            for (int i = 0; i < System.Enum.GetNames(typeof(DistrictType)).Length; i++)
             {
                 GameObject districtNodeHolder = new GameObject();
-                districtNodeHolder.transform.name = System.Enum.GetName(typeof(District), i) + " NodeHolder";
+                districtNodeHolder.transform.name = System.Enum.GetName(typeof(DistrictType), i) + " NodeHolder";
                 districtNodeHolder.tag = "NodeHolder";
                 districtNodeHolders.Add(districtNodeHolder);
             }

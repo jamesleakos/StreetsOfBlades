@@ -6,7 +6,7 @@ namespace BladesOfBellevue
 {
     public class TeleporterNodeHelper : MonoBehaviour
     {
-        public District district;
+        public DistrictType district;
 
         public Node myNode;
 

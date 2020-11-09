@@ -29,6 +29,15 @@ namespace BladesOfBellevue {
 
         #endregion
 
+        #region Inventory
+
+        // GOLD
+        [HideInInspector]
+        [SyncVar]
+        public int goldAmount = 1000;
+
+        // Items of Power
+
         #region Skins and Disguises
 
         /// <summary>
@@ -42,6 +51,8 @@ namespace BladesOfBellevue {
         /// Array of available skins.
         /// </summary>
         public GameObject[] skins;
+
+        #endregion
 
         #endregion
 
@@ -82,6 +93,12 @@ namespace BladesOfBellevue {
         /// Clip to play when assassinating.
         /// </summary>
         public AudioClip assassinationClip;
+
+        #endregion
+
+        #region UI
+        private bool personalMenuOn;
+        public GameObject personalMenu;
 
         #endregion
 
@@ -152,8 +169,10 @@ namespace BladesOfBellevue {
         #region Update
         //continously check for input on desktop platforms
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
-        protected void Update()
+        protected override void Update()
         {
+            base.Update();
+
             ServerCheckForPlayerInteraction();
 
             //skip further calls for remote clients
@@ -175,22 +194,34 @@ namespace BladesOfBellevue {
 #endif
         private void PlayerInputs()
         {
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(1)) PingPlayers();
+
+            if (Input.GetMouseButtonDown(0)) PingForLeftClickNodesAndButtons();
+
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.Space)) CmdKillPlayer();
+
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
-                PingPlayers();
+                if (!amRunning) CmdSetRunning(true);
+            }
+            else
+            {
+                if (amRunning) CmdSetRunning(false);
             }
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetKeyDown(KeyCode.C))
             {
-                PingForLeftClickNodesAndButtons();
-            }
-
-            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.Space))
-            {
-                CmdKillPlayer();
+                if (personalMenuOn) SetPersonalMenu(false);
+                else SetPersonalMenu(true);
             }
         }
-        
+
+        #endregion
+
+        #region Switching Skins
+
+
+
         #endregion
 
         #region Player Interaction
@@ -213,7 +244,7 @@ namespace BladesOfBellevue {
                 }
             }
 
-            if (talkPlayer != null && talkPlayer.GetComponent<Player>().playerBehaviorState != PlayerBehaviorState.standing)
+            if (talkPlayer != null && talkPlayer.GetComponent<Player>().playerBehaviorState != PlayerBehaviorState.talking)
             {
                 if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < talkDistance && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
                 {
@@ -221,14 +252,14 @@ namespace BladesOfBellevue {
                     if (result)
                     {
                         Debug.Log("Stop aggreed to");
-                        ChangePlayerBehavior(PlayerBehaviorState.standing);
+                        ChangePlayerBehavior(PlayerBehaviorState.talking);
                     }
                 }
-            }            
+            }
         }
 
         [Command]
-        private void CmdKillPlayer ()
+        private void CmdKillPlayer()
         {
             if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
             {
@@ -305,8 +336,16 @@ namespace BladesOfBellevue {
         protected void RightClickPlayer(Player player)
         {
             TurnOffClickedPlayerMenu();
-            clickedPlayer = player;
-            player.SetInteractionMenuOn();
+            SetPersonalMenu(false);
+            if (player != gameObject.GetComponent<Player>())
+            {
+                clickedPlayer = player;
+                player.SetInteractionMenuOn();
+            } else
+            {
+                SetPersonalMenu(true);
+            }
+            
         }
 
         protected Player PickClosestPlayerToMouse(List<Player> players)
@@ -325,6 +364,11 @@ namespace BladesOfBellevue {
             overlapPlayers.Remove(p);
 
             return p;
+        }
+
+        protected void SetPersonalMenu (bool set)
+        {
+            personalMenu.SetActive(set);
         }
 
         #endregion
@@ -361,6 +405,10 @@ namespace BladesOfBellevue {
             } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.assassinate)
             {
                 CmdKillPlayer();
+            } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.changeClothes)
+            {
+                var button = buttonToClick.GetComponent<PlayerChangeClothesButton>();
+                ChangeClothes(button.citizenType);
             }
         }
 
@@ -378,6 +426,11 @@ namespace BladesOfBellevue {
             }
 
             return b;
+        }
+
+        private void ChangeClothes (CitizenType citizenType)
+        {
+
         }
 
         [Command]
@@ -402,7 +455,7 @@ namespace BladesOfBellevue {
         [Command]
         private void CmdSetDismiss(GameObject p)
         {
-            ChangePlayerBehavior(PlayerBehaviorState.walking);
+            ChangePlayerBehavior(PlayerBehaviorState.moving);
             talkPlayer = null;
             clickedPlayer = null;
             p.GetComponent<Player>().talkingPlayer = null;
@@ -700,6 +753,18 @@ namespace BladesOfBellevue {
             }
         }
 
+        [Command]
+        private void CmdSetRunning(bool setRunning)
+        {
+            amRunning = setRunning;
+            RpcSetRunning(setRunning);
+        }
+
+        [ClientRpc]
+        private void RpcSetRunning(bool setRunning)
+        {
+            amRunning = setRunning;
+        }
         #endregion
 
         #region Teleporting
@@ -710,7 +775,7 @@ namespace BladesOfBellevue {
         }
 
         [Command]
-        private void CmdChangeDistrict(District district)
+        private void CmdChangeDistrict(DistrictType district)
         {
             currentDistrict = district;
         }
