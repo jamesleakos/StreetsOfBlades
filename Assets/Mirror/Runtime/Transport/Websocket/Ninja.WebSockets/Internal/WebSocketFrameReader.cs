@@ -65,7 +65,7 @@ namespace Ninja.WebSockets.Internal
 
             try
             {
-                // use the masking key to decode the data if needed
+                // use the maclothesg key to decode the data if needed
                 if (isMaskBitSet)
                 {
                     ArraySegment<byte> maskKey = new ArraySegment<byte>(smallBuffer.Array, 0, WebSocketFrameCommon.MaskKeyLength);

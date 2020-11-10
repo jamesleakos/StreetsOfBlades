@@ -13,28 +13,34 @@ namespace BladesOfBellevue
     /// Networked player class implementing movement control and shooting.
 	/// Contains both server and client logic in an authoritative approach.
     /// </summary> 
+    /// 
+
 	public class Player : NetworkBehaviour
     {
 
         #region Variables
 
         #region Scale and Appearance
-
-        [HideInInspector]
-        [SyncVar(hook = "OnHeadRotation")]
-        public int headRotation;
+        [Header("Body Parts")]
 
         /// <summary>
         /// Body part to rotate with look direction.
         /// </summary>
         public Transform head;
 
+        public GameObject aliveBody;
+        public GameObject deadBody;
+
+        [HideInInspector]
+        [SyncVar(hook = "OnHeadRotation")]
+        public int headRotation;
+
         //limit for sending turret rotation updates
         protected float sendRate = 0.1f;
 
         //timestamp when next rotate update should happen
         protected float nextRotate;
-
+        
         #endregion
 
         #region Last Killed Me
@@ -53,6 +59,8 @@ namespace BladesOfBellevue
         #endregion
 
         #region Character Type
+
+        [Header("Citizen Attributes")]
 
         public TextMeshProUGUI nameText;
 
@@ -79,10 +87,6 @@ namespace BladesOfBellevue
         }
 
         public CitizenColor citizenColor;
-
-        public GameObject aliveBody;
-
-        public GameObject deadBody;
 
         #endregion
 
@@ -111,7 +115,7 @@ namespace BladesOfBellevue
 
         public float talkDistance = 1.5f;
 
-        public bool canKill;
+        protected bool canKill;
 
         #endregion
 
@@ -124,24 +128,27 @@ namespace BladesOfBellevue
             talking,
             dead
         }
-
+        [HideInInspector]
         [SyncVar]
         public PlayerBehaviorState playerBehaviorState;
 
         #endregion
 
         #region Pathing and Movement
-
+        
         // pathing
         protected PathManager pathManager;
+        [HideInInspector]
         public List<Node> path = new List<Node>();
 
         // movement
         protected Vector3 nextGoalPos;
         protected Vector3 finalGoalPos;
         protected Node finalGoalNode;
-        protected int currentGoalNode;
+        [HideInInspector]
+        public int currentGoalNode;
 
+        [Header("Movement")]
         public float walkSpeed = 2;
         public float runSpeed = 5;
 
@@ -159,10 +166,10 @@ namespace BladesOfBellevue
         public GameObject talkingPlayer;
 
         #region Teleporting
-
+        [HideInInspector]
         public bool teleporting = false;
 
-        //[HideInInspector]
+        [HideInInspector]
         [SyncVar]
         public DistrictType currentDistrict;
 

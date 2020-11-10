@@ -34,7 +34,7 @@ namespace Ninja.WebSockets.Internal
     internal static class WebSocketFrameWriter
     {
         /// <summary>
-        /// This is used for data masking so that web proxies don't cache the data
+        /// This is used for data maclothesg so that web proxies don't cache the data
         /// Therefore, there are no cryptographic concerns
         /// </summary>
         static readonly Random _random;

@@ -24,6 +24,9 @@ namespace BladesOfBellevue {
         // some lists
         public List<Node> neighbors;
 
+        // Teleporter Code
+        public TeleporterNodeHelper teleporterNodeHelper;
+        [HideInInspector]
         public List<Player> teleportingPlayers = new List<Player>();
 
         // methods for PathManager
@@ -35,12 +38,7 @@ namespace BladesOfBellevue {
             get;
             set;
         }
-
-        // Teleporter Code
-        public Node teleporterDestinationNode;
-
-        public TeleporterNodeHelper teleporterNodeHelper;
-
+        
         void Awake()
         {
         }
@@ -53,6 +51,7 @@ namespace BladesOfBellevue {
             if (col.tag == "Player" && nodeType == NodeType.portal)
             {
                 Player player = col.gameObject.GetComponent<Player>();
+
                 if (teleportingPlayers.Contains(player))
                 {
                     HumanPlayer humanPlayer = player.gameObject.GetComponent<HumanPlayer>();
@@ -64,7 +63,10 @@ namespace BladesOfBellevue {
                     }
                 } else
                 {
+                    if (player.path[player.currentGoalNode] != this) return;
+
                     player.teleporting = true;
+                    var teleporterDestinationNode = neighbors.Find(x => x.nodeType == NodeType.portal);
                     teleporterDestinationNode.teleportingPlayers.Add(player);
                     player.ReachedNextNode();
                     player.gameObject.transform.position = teleporterDestinationNode.gameObject.transform.position;

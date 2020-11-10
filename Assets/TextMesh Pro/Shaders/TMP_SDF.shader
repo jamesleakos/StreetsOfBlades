@@ -207,7 +207,7 @@ SubShader {
 			float2 bOffset = float2(x, y);
 		#endif
 
-			// Generate UV for the Masking Texture
+			// Generate UV for the Maclothesg Texture
 			float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
 			float2 maskUV = (vert.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
 

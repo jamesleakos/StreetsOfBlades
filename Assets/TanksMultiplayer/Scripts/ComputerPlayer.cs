@@ -39,8 +39,10 @@ namespace BladesOfBellevue
         {
             base.Start();
             ChooseNewPath();
-            nextTalkTime = Random.Range(minNextTalk, maxNextTalk);
-            nextStandTime = Random.Range(minNextStand, maxNextStand);
+            nextTalkTime = Time.time + Random.Range(minNextTalk, maxNextTalk);
+            nextStandTime = Time.time + Random.Range(minNextStand, maxNextStand);
+
+            Debug.Log(nextStandTime);
         }
         // Update is called once per frame
 
@@ -56,8 +58,8 @@ namespace BladesOfBellevue
             if (Time.time > nextStandTime)
             {
                 ChangePlayerBehavior(PlayerBehaviorState.standing);
-                nextStandTime = Random.Range(minNextStand, maxNextStand);
-                endStandTime = Random.Range(minStandLength, maxStandLength);
+                nextStandTime = Time.time + Random.Range(minNextStand, maxNextStand);
+                endStandTime = Time.time + Random.Range(minStandLength, maxStandLength);
                 standingByMyself = true;
             }
 
@@ -119,7 +121,7 @@ namespace BladesOfBellevue
 
                         var currentScale = aliveBody.transform.localScale;
                         var newScale = new Vector3(
-                                        (gameObject.transform.position.x - computerPlayer.gameObject.transform.position.x > 0 ? -1 : 1) * currentScale.x,
+                                        (gameObject.transform.position.x - computerPlayer.gameObject.transform.position.x > 0 ? -1 : 1) * Mathf.Abs(currentScale.x),
                                         1 * currentScale.y,
                                         1 * currentScale.z);
                         RpcSetTalkingScale(newScale);
@@ -141,7 +143,7 @@ namespace BladesOfBellevue
 
             var currentScale = aliveBody.transform.localScale;
             var newScale = new Vector3(
-                            (gameObject.transform.position.x - computerPlayer.gameObject.transform.position.x > 0 ? -1 : 1) * currentScale.x,
+                            (gameObject.transform.position.x - computerPlayer.gameObject.transform.position.x > 0 ? -1 : 1) * Mathf.Abs(currentScale.x),
                             1 * currentScale.y,
                             1 * currentScale.z);
             RpcSetTalkingScale(newScale);

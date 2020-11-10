@@ -13,6 +13,7 @@ namespace BladesOfBellevue
         {
             DestroyFillerNodes();
             CleanUpNodeNeighbors();
+            FillNodeHelpers();
             UpdateNeighbors();
             FillInNodeSpace();
             UpdateNeighbors();
@@ -35,6 +36,12 @@ namespace BladesOfBellevue
         public static void UpdateNeighborNodes()
         {
             UpdateNeighbors();
+        }
+
+        [MenuItem("Nodes/FillInNodeHelpers")]
+        public static void FillInNodeHelpers()
+        {
+            FillNodeHelpers();
         }
 
         public static void CleanUpNodeNeighbors()
@@ -110,6 +117,22 @@ namespace BladesOfBellevue
             foreach (var nodeHolder in nodeHolders)
             {
                 DestroyImmediate(nodeHolder);
+            }
+        }
+
+        public static void FillNodeHelpers()
+        {
+            List<Node> allNodes = FindObjectsOfType<Node>().ToList();
+            var portalNodes = allNodes.FindAll(n => n.nodeType == Node.NodeType.portal);
+            foreach (var n in portalNodes)
+            {
+                var helper = n.teleporterNodeHelper;
+                helper.district = n.district;
+                helper.myNode = n;
+
+                Undo.RegisterCompleteObjectUndo(helper, "Added Node To Helper");
+                Undo.FlushUndoRecordObjects();
+                EditorUtility.SetDirty(helper);
             }
         }
 

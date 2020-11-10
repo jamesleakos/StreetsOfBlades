@@ -7,6 +7,11 @@ using System.Linq;
 
 
 namespace BladesOfBellevue {
+
+    public class PlayerInterction
+    {
+
+    }
     public class HumanPlayer : Player
     {
         #region Variables
@@ -30,6 +35,7 @@ namespace BladesOfBellevue {
         #endregion
 
         #region Inventory
+        [Header("Human Player - Inventory Menu")]
 
         // GOLD
         [HideInInspector]
@@ -38,36 +44,33 @@ namespace BladesOfBellevue {
 
         // Items of Power
 
-        #region Skins and Disguises
-
-        /// <summary>
-        /// Index of currently selected skin.
-        /// </summary>
-        [HideInInspector]
-        [SyncVar(hook = "OnSkinChange")]
-        public int currentSkin = 0;
-
-        /// <summary>
-        /// Array of available skins.
-        /// </summary>
-        public GameObject[] skins;
-
         #endregion
+
+        #region Clothes and Disguises
+
+        [Header("Human Player - Clothes Menu")]
+        public GameObject clothesMenu;
+        private bool personalMenuOn;
+
+        private bool merchantClothesAvailable;
+        private bool traderClothesAvailable;
+        private bool farmerClothesAvailable;
+        private bool monkClothesAvailable;
 
         #endregion
 
         #region Player Interaction
-
+        [Header("Human Player - Kill Distance")]
         public float killDistance = 3.0f;
 
         private List<Player> pingedPlayers = new List<Player>();
         private List<Player> overlapPlayers = new List<Player>();
 
         private Player clickedPlayer;
-
+        [HideInInspector]
         [SyncVar]
         public GameObject targetPlayer;
-
+        [HideInInspector]
         [SyncVar]
         public GameObject talkPlayer;
 
@@ -93,12 +96,6 @@ namespace BladesOfBellevue {
         /// Clip to play when assassinating.
         /// </summary>
         public AudioClip assassinationClip;
-
-        #endregion
-
-        #region UI
-        private bool personalMenuOn;
-        public GameObject personalMenu;
 
         #endregion
 
@@ -167,8 +164,9 @@ namespace BladesOfBellevue {
         #endregion
 
         #region Update
-        //continously check for input on desktop platforms
-#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
+
+        #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
+
         protected override void Update()
         {
             base.Update();
@@ -191,7 +189,41 @@ namespace BladesOfBellevue {
 
             MoveCharacter();
         }
-#endif
+
+        #endif
+
+        private void ServerCheckForPlayerInteraction()
+        {
+            if (!isServer) return;
+
+            if (targetPlayer != null)
+            {
+                if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
+                {
+                    if (!canKill) targetPlayer.GetComponent<Player>().TargetSetCanKillCircle(gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                    canKill = true;
+                }
+                else
+                {
+                    if (canKill) targetPlayer.GetComponent<Player>().TargetSetTargetSelectedCircle(gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                    canKill = false;
+                }
+            }
+
+            if (talkPlayer != null && talkPlayer.GetComponent<Player>().playerBehaviorState != PlayerBehaviorState.talking)
+            {
+                if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < talkDistance && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
+                {
+                    bool result = talkPlayer.GetComponent<Player>().AskToStopToTalk(this);
+                    if (result)
+                    {
+                        Debug.Log("Stop aggreed to");
+                        ChangePlayerBehavior(PlayerBehaviorState.talking);
+                    }
+                }
+            }
+        }
+
         private void PlayerInputs()
         {
             if (Input.GetMouseButtonDown(1)) PingPlayers();
@@ -217,61 +249,7 @@ namespace BladesOfBellevue {
         }
 
         #endregion
-
-        #region Switching Skins
-
-
-
-        #endregion
-
-        #region Player Interaction
-
-
-        private void ServerCheckForPlayerInteraction()
-        {
-            if (!isServer) return;
-
-            if (targetPlayer != null)
-            {
-                if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
-                {
-                    if (!canKill) targetPlayer.GetComponent<Player>().TargetSetCanKillCircle(gameObject.GetComponent<NetworkIdentity>().connectionToClient);
-                    canKill = true;
-                } else
-                {
-                    if (canKill) targetPlayer.GetComponent<Player>().TargetSetTargetSelectedCircle(gameObject.GetComponent<NetworkIdentity>().connectionToClient);
-                    canKill = false;
-                }
-            }
-
-            if (talkPlayer != null && talkPlayer.GetComponent<Player>().playerBehaviorState != PlayerBehaviorState.talking)
-            {
-                if ((talkPlayer.transform.position - gameObject.transform.position).magnitude < talkDistance && currentDistrict == talkPlayer.GetComponent<Player>().currentDistrict)
-                {
-                    bool result = talkPlayer.GetComponent<Player>().AskToStopToTalk(this);
-                    if (result)
-                    {
-                        Debug.Log("Stop aggreed to");
-                        ChangePlayerBehavior(PlayerBehaviorState.talking);
-                    }
-                }
-            }
-        }
-
-        [Command]
-        private void CmdKillPlayer()
-        {
-            if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
-            {
-                Player killedPlayer = targetPlayer.GetComponent<Player>();
-                killedPlayer.playerBehaviorState = PlayerBehaviorState.dead;
-                killedPlayer.GetKilled();
-                killedPlayer.RpcGetKilled();
-                targetPlayer = null;
-                Debug.Log("Player Killed");
-            }
-        }
-
+        
         #region Selecting a player
 
         protected void PingPlayers()
@@ -368,12 +346,139 @@ namespace BladesOfBellevue {
 
         protected void SetPersonalMenu (bool set)
         {
-            personalMenu.SetActive(set);
+            clothesMenu.SetActive(set);
         }
 
         #endregion
 
-        #region Pressing Buttons
+        #region Killing Players
+
+        [Command]
+        private void CmdKillPlayer()
+        {
+            if ((targetPlayer.transform.position - gameObject.transform.position).magnitude < killDistance && currentDistrict == targetPlayer.GetComponent<Player>().currentDistrict)
+            {
+                Player killedPlayer = targetPlayer.GetComponent<Player>();
+                killedPlayer.playerBehaviorState = PlayerBehaviorState.dead;
+                killedPlayer.GetKilled();
+                killedPlayer.RpcGetKilled();
+                targetPlayer = null;
+                Debug.Log("Player Killed");
+            }
+        }
+
+        #endregion
+
+        #region Changing Clothes
+
+        private void ChangeClothes(CitizenType setCitizenType)
+        {
+            switch (setCitizenType)
+            {
+                case CitizenType.farmer:
+                    if (farmerClothesAvailable) CmdChangeClothes(CitizenType.farmer);
+                    break;
+                case CitizenType.trader:
+                    if (traderClothesAvailable) CmdChangeClothes(CitizenType.trader);
+                    break;
+                case CitizenType.monk:
+                    if (monkClothesAvailable) CmdChangeClothes(CitizenType.monk);
+                    break;
+                case CitizenType.merchant:
+                    if (merchantClothesAvailable) CmdChangeClothes(CitizenType.merchant);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        [Command]
+        private void CmdChangeClothes(CitizenType setCitizenType)
+        {
+            switch (setCitizenType)
+            {
+                case CitizenType.farmer:
+                    if (farmerClothesAvailable)
+                    {
+                        farmerClothesAvailable = false;
+                        ChangeClothesServerHelper(setCitizenType);
+                        RpcChangeClothes(citizenType, citizenColor);
+                    }
+                    break;
+                case CitizenType.trader:
+                    if (traderClothesAvailable)
+                    {
+                        traderClothesAvailable = false;
+                        ChangeClothesServerHelper(setCitizenType);
+                        RpcChangeClothes(citizenType, citizenColor);
+                    }
+                    break;
+                case CitizenType.monk:
+                    if (monkClothesAvailable)
+                    {
+                        monkClothesAvailable = false;
+                        ChangeClothesServerHelper(setCitizenType);
+                        RpcChangeClothes(citizenType, citizenColor);
+                    }
+                    break;
+                case CitizenType.merchant:
+                    if (merchantClothesAvailable)
+                    {
+                        merchantClothesAvailable = false;
+                        ChangeClothesServerHelper(setCitizenType);
+                        RpcChangeClothes(citizenType, citizenColor);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        [Server]
+        private void ChangeClothesServerHelper(CitizenType setCitizenType)
+        {
+            citizenType = setCitizenType;
+            citizenColor = (CitizenColor)Random.Range(0, System.Enum.GetNames(typeof(CitizenColor)).Length);
+        }
+
+        [ClientRpc]
+        private void RpcChangeClothes(CitizenType setCitizenType, CitizenColor setCitizenColor)
+        {
+            switch (setCitizenType)
+            {
+                case CitizenType.farmer:
+                    farmerClothesAvailable = false;
+                    ChangeClothesClientHelper(setCitizenType, setCitizenColor);
+                    break;
+                case CitizenType.trader:
+                    traderClothesAvailable = false;
+                    ChangeClothesClientHelper(setCitizenType, setCitizenColor);
+                    break;
+                case CitizenType.monk:
+                    monkClothesAvailable = false;
+                    ChangeClothesClientHelper(setCitizenType, setCitizenColor);
+                    break;
+                case CitizenType.merchant:
+                    merchantClothesAvailable = false;
+                    ChangeClothesClientHelper(setCitizenType, setCitizenColor);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        [Client]
+        private void ChangeClothesClientHelper(CitizenType setCitizenType, CitizenColor setCitizenColor)
+        {
+            citizenType = setCitizenType;
+            citizenColor = setCitizenColor;
+
+            nameText.text = setCitizenColor + " " + setCitizenType;
+        }
+
+        #endregion
+
+        #region Buttons on Players
 
         protected void InteractionButtonSelection(List<PlayerInteractionButton> playerInteractionButtons)
         {
@@ -388,7 +493,8 @@ namespace BladesOfBellevue {
                 CmdSetTarget(clickedPlayer.gameObject);
                 clickedPlayer.SetTargetSelectedCircle();
 
-            } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.talk)
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.talk)
             {
                 CmdSetTalk(clickedPlayer.gameObject);
                 clickedPlayer.SetTalkSelectedCircle();
@@ -402,10 +508,12 @@ namespace BladesOfBellevue {
                     CmdSetDismiss(talkPlayer.gameObject);
                 }
 
-            } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.assassinate)
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.assassinate)
             {
                 CmdKillPlayer();
-            } else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.changeClothes)
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.changeClothes)
             {
                 var button = buttonToClick.GetComponent<PlayerChangeClothesButton>();
                 ChangeClothes(button.citizenType);
@@ -428,10 +536,9 @@ namespace BladesOfBellevue {
             return b;
         }
 
-        private void ChangeClothes (CitizenType citizenType)
-        {
+        #endregion
 
-        }
+        #region Target and Talk
 
         [Command]
         private void CmdSetTarget(GameObject p)
@@ -447,7 +554,6 @@ namespace BladesOfBellevue {
         [Command]
         private void CmdSetTalk(GameObject p)
         {
-            Debug.Log("this is the cmd set talk statement");
             talkPlayer = p;
             p.GetComponent<Player>().talkingPlayer = gameObject;
         }
@@ -619,7 +725,7 @@ namespace BladesOfBellevue {
             RpcRespawn((short)0);
         }
 
-        public void OnSkinChange(int oldSkin, int newSkin)
+        public void OnClothesChange(int oldClothes, int newClothes)
         {
 
         }
@@ -658,8 +764,6 @@ namespace BladesOfBellevue {
             //display game over window
             GameManager.GetInstance().DisplayGameOver(teamIndex);
         }
-
-        #endregion
 
         #endregion
 

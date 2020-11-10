@@ -3,7 +3,7 @@
 // - No Glow Option
 // - Softness is applied on both side of the outline
 
-Shader "TextMeshPro/Mobile/Distance Field - Masking" {
+Shader "TextMeshPro/Mobile/Distance Field - Maclothesg" {
 
 Properties {
 	[HDR]_FaceColor		("Face Color", Color) = (1,1,1,1)
@@ -173,7 +173,7 @@ SubShader {
 			float2 layerOffset = float2(x, y);
 		#endif
 
-			// Generate UV for the Masking Texture
+			// Generate UV for the Maclothesg Texture
 			float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
 			float2 maskUV = (vert.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
 

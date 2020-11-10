@@ -46,7 +46,7 @@ pixel_t VertShader(vertex_t input)
     float weight = lerp(_WeightNormal, _WeightBold, bold) / 4.0;
     weight = (weight + _FaceDilate) * _ScaleRatioA * 0.5;
 
-    // Generate UV for the Masking Texture
+    // Generate UV for the Maclothesg Texture
     float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
     float2 maskUV = (vert.xy - clampedRect.xy) / (clampedRect.zw - clampedRect.xy);
 

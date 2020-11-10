@@ -14,34 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  headRotation: 0
   head: {fileID: 3985815805060691442}
+  aliveBody: {fileID: 2949208182822897743}
+  deadBody: {fileID: 4188819792341113875}
+  headRotation: 0
   killedBy: {fileID: 0}
   nameText: {fileID: 8733164432689520066}
   citizenType: 0
   citizenColor: 0
-  aliveBody: {fileID: 2949208182822897743}
-  deadBody: {fileID: 4188819792341113875}
   talkSelectedCircle: {fileID: 9105060667857312608}
   targetSelectedCircle: {fileID: 8652734433344907328}
   canKillCircle: {fileID: 5637352511685167558}
   rightClickMenu: {fileID: 7190624593588929223}
   talkMenu: {fileID: 7009307019110419193}
   talkDistance: 1.5
-  canKill: 0
   playerBehaviorState: 0
   path: []
-  moveSpeed: 2
+  currentGoalNode: 0
+  walkSpeed: 2
+  runSpeed: 5
+  amRunning: 0
   targetingPlayer: {fileID: 0}
   talkingPlayer: {fileID: 0}
   teleporting: 0
   currentDistrict: 0
-  minNextTalk: 20
-  maxNextTalk: 60
+  minNextTalk: 10
+  maxNextTalk: 120
   minTalkLength: 2
   maxTalkLength: 10
-  minNextStand: 40
-  maxNextStand: 120
+  minNextStand: 20
+  maxNextStand: 240
   minStandLength: 1
   maxStandLength: 10
   eavesdropDistance: 10
