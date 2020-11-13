@@ -8,10 +8,6 @@ using System.Linq;
 
 namespace BladesOfBellevue {
 
-    public class PlayerInterction
-    {
-
-    }
     public class HumanPlayer : Player
     {
         #region Variables
@@ -50,12 +46,16 @@ namespace BladesOfBellevue {
 
         [Header("Human Player - Clothes Menu")]
         public GameObject clothesMenu;
+        public GameObject merchantClothesButton;
+        public GameObject traderClothesButton;
+        public GameObject farmerClothesButton;
+        public GameObject monkClothesButton;
         private bool personalMenuOn;
 
-        private bool merchantClothesAvailable;
-        private bool traderClothesAvailable;
-        private bool farmerClothesAvailable;
-        private bool monkClothesAvailable;
+        private bool merchantClothesAvailable = true;
+        private bool traderClothesAvailable = true;
+        private bool farmerClothesAvailable = true;
+        private bool monkClothesAvailable = true;
 
         #endregion
 
@@ -96,6 +96,13 @@ namespace BladesOfBellevue {
         /// Clip to play when assassinating.
         /// </summary>
         public AudioClip assassinationClip;
+
+        #endregion
+
+        #region UI Elements
+
+        public GameObject goToMarkerPrefab;
+        private GameObject goToMarker;
 
         #endregion
 
@@ -300,6 +307,7 @@ namespace BladesOfBellevue {
             } else
             {
                 TurnOffClickedPlayerMenu();
+                SetPersonalMenu(false);
             }
         }
 
@@ -347,6 +355,13 @@ namespace BladesOfBellevue {
         protected void SetPersonalMenu (bool set)
         {
             clothesMenu.SetActive(set);
+            if (set)
+            {
+                farmerClothesButton.SetActive(farmerClothesAvailable);
+                traderClothesButton.SetActive(traderClothesAvailable);
+                monkClothesButton.SetActive(monkClothesAvailable);
+                merchantClothesButton.SetActive(merchantClothesAvailable);
+            }
         }
 
         #endregion
@@ -390,6 +405,7 @@ namespace BladesOfBellevue {
                 default:
                     break;
             }
+            SetPersonalMenu(false);
         }
 
         [Command]
@@ -437,8 +453,43 @@ namespace BladesOfBellevue {
         [Server]
         private void ChangeClothesServerHelper(CitizenType setCitizenType)
         {
+            var formerCitizenType = citizenType;
+            var formerCitizenColor = citizenColor;
+
             citizenType = setCitizenType;
             citizenColor = (CitizenColor)Random.Range(0, System.Enum.GetNames(typeof(CitizenColor)).Length);
+            foreach (var opponent in FindObjectsOfType<HumanPlayer>())
+            {
+                if (opponent.targetPlayer == gameObject && opponent.currentDistrict != currentDistrict)
+                {
+                    opponent.targetPlayer = null;
+                    TargetTurnOffTargeting(opponent.gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                }
+            }
+            SendEventToBots(BotMemory.MemoryType.changedClothes, formerCitizenColor, formerCitizenType);
+        }
+
+        [Server]
+        private void SendEventToBots (BotMemory.MemoryType memory, CitizenColor formerCitizenColor = CitizenColor.blue, CitizenType formerCitizenType = CitizenType.spy)
+        {
+            var visibleComputerPlayers = GameObject.FindObjectsOfType<ComputerPlayer>().ToList().FindAll(p => p.currentDistrict == currentDistrict);
+            foreach (ComputerPlayer cp in visibleComputerPlayers)
+            {
+                Debug.Log("send events to bos");
+                // add to bot memory
+                cp.ReceiveEvent(
+                    this,
+                    memory,
+                    formerCitizenColor,
+                    formerCitizenType
+                );
+            }
+        }
+
+        [TargetRpc]
+        private void TargetTurnOffTargeting (NetworkConnection target)
+        {
+            ClearAllMenus();
         }
 
         [ClientRpc]
@@ -472,8 +523,9 @@ namespace BladesOfBellevue {
         {
             citizenType = setCitizenType;
             citizenColor = setCitizenColor;
-
             nameText.text = setCitizenColor + " " + setCitizenType;
+
+            Debug.Log("TODO: Clothes change animation goes here.");
         }
 
         #endregion
@@ -504,7 +556,9 @@ namespace BladesOfBellevue {
             {
                 if (talkPlayer != null)
                 {
-                    talkPlayer.GetComponent<Player>().ClearAllMenus();
+                    var tp = talkPlayer.GetComponent<Player>();
+                    tp.ClearAllMenus();
+                    
                     CmdSetDismiss(talkPlayer.gameObject);
                 }
 
@@ -517,6 +571,10 @@ namespace BladesOfBellevue {
             {
                 var button = buttonToClick.GetComponent<PlayerChangeClothesButton>();
                 ChangeClothes(button.citizenType);
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.dismissMemoryBubble)
+            {
+                Destroy(buttonToClick.gameObject);
             }
         }
 
@@ -543,12 +601,7 @@ namespace BladesOfBellevue {
         [Command]
         private void CmdSetTarget(GameObject p)
         {
-            if (targetPlayer != null)
-            {
-                targetPlayer.GetComponent<Player>().targetingPlayer = null;
-            }
             targetPlayer = p;
-            p.GetComponent<Player>().targetingPlayer = gameObject;
         }
 
         [Command]
@@ -839,7 +892,7 @@ namespace BladesOfBellevue {
                             Node currentNode = pathManager.FindClosestNode(transform.position);
                             if (CompareLists(goalNode.neighbors, currentNode.neighbors) && currentNode.nodeType == Node.NodeType.filler)
                             {
-                                path.Clear();
+                                ClearPath();
                                 path.Add(goalNode);
                                 RestartNodeLists();
                             }
@@ -854,6 +907,18 @@ namespace BladesOfBellevue {
                         }
                     }
                 }
+            }
+        }
+        public override void ClearPath()
+        {
+            base.ClearPath();
+            if (goToMarker != null)
+            {
+                Destroy(goToMarker);
+                goToMarker = null;
+            } else
+            {
+                Debug.Log("Make go to marker");
             }
         }
 

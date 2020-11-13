@@ -34,7 +34,6 @@ MonoBehaviour:
   walkSpeed: 2
   runSpeed: 5
   amRunning: 0
-  targetingPlayer: {fileID: 0}
   talkingPlayer: {fileID: 0}
   teleporting: 0
   currentDistrict: 0
@@ -46,7 +45,11 @@ MonoBehaviour:
   maxNextStand: 240
   minStandLength: 1
   maxStandLength: 10
-  eavesdropDistance: 10
+  memoryBubbles: []
+  memoryBubblePrefab: {fileID: 3385430910841414050, guid: 9807c3939bd8e5b4081772a731f1ac66,
+    type: 3}
+  overhearingPlayers: []
+  overhearDistance: 100
 --- !u!1001 &8485072282466040953
 PrefabInstance:
   m_ObjectHideFlags: 0

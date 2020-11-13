@@ -8,6 +8,9 @@ namespace BladesOfBellevue
 {
     public class BotSpawner : NetworkBehaviour
     {
+        // test mode will not spawn many bots, and will not spawn nobles. Also will set talk to be really fast
+        public bool testMode = false;
+
         private NetworkManagerCustom networkManager;
 
         private float nextNobleSpawn;
@@ -25,6 +28,8 @@ namespace BladesOfBellevue
             GameObject botPrefab = networkManager.spawnPrefabs.Find(x => x.name == "ComputerPlayer");
             List<GameObject> nodes = GameObject.FindGameObjectsWithTag("Node").ToList();
 
+            int testHelperInt = 0;
+
             foreach (Player.CitizenType citizenType in Enum.GetValues(typeof(Player.CitizenType)))
             {
                 // Don't do special stuff
@@ -32,6 +37,8 @@ namespace BladesOfBellevue
                 {
                     foreach (Player.CitizenColor citizenColor in Enum.GetValues(typeof(Player.CitizenColor)))
                     {
+                        if (testMode && testHelperInt > 1) return;
+
                         GameObject bot = Instantiate(botPrefab);
                         ComputerPlayer computerPlayer = bot.GetComponent<ComputerPlayer>();
                         computerPlayer.citizenType = citizenType;
@@ -43,7 +50,11 @@ namespace BladesOfBellevue
                         computerPlayer.currentDistrict = spawnNode.district;
                         computerPlayer.nameText.text = citizenColor.ToString() + citizenType.ToString();
 
+                        if (testMode) computerPlayer.minNextTalk = 1;
+                        if (testMode) computerPlayer.maxNextTalk = 2;
+
                         NetworkServer.Spawn(bot);
+                        testHelperInt++;
                     }
                 }                
             }
@@ -51,7 +62,7 @@ namespace BladesOfBellevue
 
         private void Update()
         {
-            if (Time.time > nextNobleSpawn)
+            if (Time.time > nextNobleSpawn && !testMode)
             {
                 GameObject botPrefab = networkManager.spawnPrefabs.Find(x => x.name == "ComputerPlayer");
                 List<GameObject> nodes = GameObject.FindGameObjectsWithTag("Node").ToList();

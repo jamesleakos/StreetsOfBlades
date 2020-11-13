@@ -30,6 +30,7 @@ MonoBehaviour:
   talkDistance: 1.5
   playerBehaviorState: 0
   path: []
+  currentGoalNode: 0
   walkSpeed: 2
   runSpeed: 5
   amRunning: 0
@@ -41,6 +42,10 @@ MonoBehaviour:
   teamIndex: 0
   goldAmount: 1000
   clothesMenu: {fileID: 7721106709126831183}
+  merchantClothesButton: {fileID: 4155184751129634978}
+  traderClothesButton: {fileID: 4078108360370312354}
+  farmerClothesButton: {fileID: 318965398867827452}
+  monkClothesButton: {fileID: 417849511495296494}
   killDistance: 3
   targetPlayer: {fileID: 0}
   talkPlayer: {fileID: 0}

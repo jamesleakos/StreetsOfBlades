@@ -7,6 +7,23 @@ using System.Linq;
 
 namespace BladesOfBellevue
 {
+    public class BotMemory
+    {
+        public HumanPlayer humanPlayerActor;
+        public Player.CitizenColor citizenColor;
+        public Player.CitizenType citizenType;
+        public DistrictType district;
+        public float timeOccured;
+        public enum MemoryType
+        {
+            murder,
+            kickedWaif,
+            changedClothes
+        }
+        public MemoryType memoryType;
+        public Player.CitizenColor citizenColorOriginal;
+        public Player.CitizenType citizenTypeOriginal;
+    }
     public class ComputerPlayer : Player
     {
         #region Standing and Talking Among Bot Variables
@@ -29,8 +46,16 @@ namespace BladesOfBellevue
         public float minStandLength;
         public float maxStandLength;
 
-        // lots of other stuff inc
-        public float eavesdropDistance;
+        #endregion
+
+        #region Player Actions and Memory
+        
+        public List<BotMemory> memories = new List<BotMemory>();
+        public List<GameObject> memoryBubbles = new List<GameObject>();
+        public GameObject memoryBubblePrefab;
+        public List<HumanPlayer> overhearingPlayers = new List<HumanPlayer>();
+
+        public float overhearDistance = 10.0f;
 
         #endregion
 
@@ -41,8 +66,6 @@ namespace BladesOfBellevue
             ChooseNewPath();
             nextTalkTime = Time.time + Random.Range(minNextTalk, maxNextTalk);
             nextStandTime = Time.time + Random.Range(minNextStand, maxNextStand);
-
-            Debug.Log(nextStandTime);
         }
         // Update is called once per frame
 
@@ -52,7 +75,40 @@ namespace BladesOfBellevue
 
             if (!isServer) return;
 
-            if (talkingToOtherBot && Time.time > endTalkTime) EndTalkToOtherBot();
+            if (talkingToOtherBot)
+            {
+                if (Time.time > endTalkTime) {
+                    EndTalkToOtherBot();
+                } else
+                {
+                    List<HumanPlayer> humanPlayers = FindObjectsOfType<HumanPlayer>().ToList();
+                    List<HumanPlayer> nearPlayers = humanPlayers.FindAll(c => (c.gameObject.transform.position - gameObject.transform.position).magnitude < overhearDistance);
+                    foreach (var np in nearPlayers)
+                    {
+                        if (!overhearingPlayers.Contains(np))
+                        {
+                            Debug.Log("Adding player to overhearing players and triggering create memories");
+                            overhearingPlayers.Add(np);
+                            TargetTalkAboutMemories(np.gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                        }
+                    }
+
+                    var playersToRemove = new List<HumanPlayer>();
+                    foreach (var op in overhearingPlayers)
+                    {
+                        if (!nearPlayers.Contains(op))
+                        {
+                            playersToRemove.Add(op);
+                            TargetClearMemoryBubbles(op.gameObject.GetComponent<NetworkIdentity>().connectionToClient);
+                        }
+                    }
+                    foreach (var ptr in playersToRemove)
+                    {
+                        overhearingPlayers.Remove(ptr);
+                    }
+                    playersToRemove.Clear();
+                }
+            }
             if (standingByMyself && Time.time > endStandTime) EndStandingByMyself();
 
             if (Time.time > nextStandTime)
@@ -84,7 +140,61 @@ namespace BladesOfBellevue
         [TargetRpc]
         private void TargetSetTalkMenuOn(NetworkConnection target)
         {
+            Debug.Log("Set Talk menu on");
             SetTalkMenuOn();
+            TalkAboutMemories();
+        }
+
+        [TargetRpc]
+        private void TargetTalkAboutMemories(NetworkConnection target)
+        {
+            TalkAboutMemories();
+        }
+
+        [Client]
+        private void TalkAboutMemories ()
+        {
+            int count = 0;
+            foreach (var memory in memories)
+            {
+                Debug.Log("creating memory number " + count.ToString());
+                GameObject memBubble = Instantiate(memoryBubblePrefab);
+                memBubble.GetComponent<MemoryBubble>().PopulateWithInfo(memory);
+                memBubble.transform.position = gameObject.transform.position + new Vector3(0, 2 + (memBubble.transform.lossyScale.y + 0.5f) * count, 0);
+                memoryBubbles.Add(memBubble);
+                count++;
+            }
+        }
+        [Client]
+        public override void ClearAllMenus()
+        {
+            base.ClearAllMenus();
+            ClearMemoryBubbles();
+        }
+
+        [TargetRpc]
+        private void TargetClearMemoryBubbles(NetworkConnection target)
+        {
+            Debug.Log("TargetClearMemoryBubbles");
+            ClearMemoryBubbles();
+        }
+
+        [ClientRpc]
+        private void RpcClearMemoryBubbles()
+        {
+            Debug.Log("RpcClearMemoryBubbles");
+            ClearMemoryBubbles();
+        }
+
+        [Client]
+        private void ClearMemoryBubbles ()
+        {
+            Debug.Log("Clearing memory bubbles");
+            foreach (var bub in memoryBubbles)
+            {
+                Destroy(bub);
+            }
+            memoryBubbles.Clear();
         }
 
         [ServerCallback]
@@ -97,9 +207,44 @@ namespace BladesOfBellevue
             }
         }
 
+        public void AddMemory (HumanPlayer humanPlayerActor, BotMemory.MemoryType memoryType, CitizenColor citizenColorOriginal, CitizenType citizenTypeOriginal, float timeOccurred)
+        {
+            BotMemory newMemory = new BotMemory();
+            newMemory.humanPlayerActor = humanPlayerActor;
+            newMemory.citizenColor = humanPlayerActor.citizenColor;
+            newMemory.citizenType = humanPlayerActor.citizenType;
+            newMemory.district = humanPlayerActor.currentDistrict;
+            newMemory.timeOccured = timeOccurred;
+            newMemory.memoryType = memoryType;
+            newMemory.citizenColorOriginal = citizenColorOriginal;
+            newMemory.citizenTypeOriginal = citizenTypeOriginal;
+
+            memories.Add(newMemory);
+        }
+
+        [Server]
+        public void ReceiveEvent(HumanPlayer humanPlayerActor, BotMemory.MemoryType memoryType, CitizenColor citizenColorOriginal, CitizenType citizenTypeOriginal)
+        {
+            Debug.Log("Receive Event");
+            //AddMemory(humanPlayerActor, memoryType, citizenColorOriginal, citizenTypeOriginal, Time.time);
+            RpcAddMemory(humanPlayerActor.gameObject, memoryType, citizenColorOriginal, citizenTypeOriginal, Time.time);
+
+            if (memoryType == BotMemory.MemoryType.murder)
+            {
+                GetScared();
+            }
+        }
+
+        [ClientRpc]
+        private void RpcAddMemory(GameObject humanPlayerActor, BotMemory.MemoryType memoryType, CitizenColor citizenColorOriginal, CitizenType citizenTypeOriginal, float timeOccurred)
+        {
+            Debug.Log("RpcAddMemory");
+            AddMemory(humanPlayerActor.GetComponent<HumanPlayer>(), memoryType, citizenColorOriginal, citizenTypeOriginal, Time.time);
+        }
+
         #endregion
 
-        #region Talking to other bots
+        #region Talking to other bots and standing alone
 
         [ServerCallback]
         private void OnTriggerEnter2D(Collider2D collision)
@@ -113,6 +258,7 @@ namespace BladesOfBellevue
                 {
                     if (Time.time > nextTalkTime)
                     {
+                        Debug.Log("Talk to other bot");
                         nextTalkTime = Time.time + Random.Range(minNextTalk, maxNextTalk);
                         endTalkTime = Time.time + Random.Range(minTalkLength, maxTalkLength);
 
@@ -135,6 +281,7 @@ namespace BladesOfBellevue
         [ServerCallback]
         public void GetTalkedToByOtherBot (float endTalkTime, ComputerPlayer computerPlayer)
         {
+            Debug.Log("Get talked to by other bot");
             this.endTalkTime = endTalkTime;
             nextTalkTime = Time.time + Random.Range(minNextTalk, maxNextTalk);
 
@@ -160,6 +307,9 @@ namespace BladesOfBellevue
         {
             talkingToOtherBot = false;
             ChangePlayerBehavior(PlayerBehaviorState.moving);
+
+            RpcClearMemoryBubbles();
+            overhearingPlayers.Clear();
         }
 
         [ServerCallback]

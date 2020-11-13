@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/TanksMultiplayer/Scenes/TDM_Game.unity
     guid: 31e6264386ab7524c8b05daefe87bec3
+  - enabled: 1
+    path: Assets/TanksMultiplayer/Scenes/CTF_Test_Mode.unity
+    guid: b9b821a8dad4bbe44a22276f4cd63cf7
   m_configObjects: {}

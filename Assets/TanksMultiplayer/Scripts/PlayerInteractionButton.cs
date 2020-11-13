@@ -14,7 +14,8 @@ public class PlayerInteractionButton : MonoBehaviour
         payWaifToFollow,
         payMonkToShout,
         payBeggarToShout,
-        changeClothes
+        changeClothes,
+        dismissMemoryBubble
     }
 
     public InteractionButtonType interactionButtonType;

@@ -160,9 +160,6 @@ namespace BladesOfBellevue
 
         [HideInInspector]
         [SyncVar]
-        public GameObject targetingPlayer;
-        [HideInInspector]
-        [SyncVar]
         public GameObject talkingPlayer;
 
         #region Teleporting
@@ -267,7 +264,7 @@ namespace BladesOfBellevue
             {
                 if ((transform.position - finalGoalPos).magnitude < 0.1 || path.Count == 1)
                 {
-                    path.Clear();
+                    ClearPath();
                 }
                 else
                 {
@@ -278,6 +275,10 @@ namespace BladesOfBellevue
                     }
                 }
             }            
+        }
+        public virtual void ClearPath ()
+        {
+            path.Clear();
         }
 
         #endregion
@@ -331,7 +332,7 @@ namespace BladesOfBellevue
 
         #region Interaction Visuals
 
-        public void ClearAllMenus ()
+        public virtual void ClearAllMenus ()
         {
             talkSelectedCircle.SetActive(false);
             targetSelectedCircle.SetActive(false);

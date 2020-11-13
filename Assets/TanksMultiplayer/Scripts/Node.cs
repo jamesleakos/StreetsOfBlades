@@ -45,7 +45,7 @@ namespace BladesOfBellevue {
         void Start()
         {
         }
-
+        [ServerCallback]
         private void OnTriggerEnter2D(Collider2D col)
         {
             if (col.tag == "Player" && nodeType == NodeType.portal)
@@ -57,7 +57,7 @@ namespace BladesOfBellevue {
                     HumanPlayer humanPlayer = player.gameObject.GetComponent<HumanPlayer>();
                     if (humanPlayer != null)
                     {
-                        humanPlayer.path.Clear();
+                        humanPlayer.ClearPath();
                         humanPlayer.path.Add(neighbors.Find(x => x.nodeType == NodeType.junction));
                         humanPlayer.RestartNodeLists();
                     }
