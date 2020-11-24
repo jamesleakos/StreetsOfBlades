@@ -14,8 +14,16 @@ public class PlayerInteractionButton : MonoBehaviour
         payWaifToFollow,
         payMonkToShout,
         payBeggarToShout,
+        askBeggarNetwork,
         changeClothes,
-        dismissMemoryBubble
+        dismissMemoryBubble,
+
+        openSeerBarterMenu,
+        paySeerToTellIfTargeted,
+        paySeerToTellWhereTargetersAre,
+        paySeerToShowTargeters,
+        paySeerToShowPictureOfSpy,
+        paySeerToListDistrictsOfSpies
     }
 
     public InteractionButtonType interactionButtonType;

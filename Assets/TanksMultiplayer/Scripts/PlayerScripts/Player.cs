@@ -72,8 +72,13 @@ namespace BladesOfBellevue
             noble,
             farmer,
             seer,
+            guard,
+            chandler,
             monk,
             beggar,
+            townsman,
+            watchman,
+            mariner,
             spy
         }
 
@@ -347,7 +352,7 @@ namespace BladesOfBellevue
             rightClickMenu.SetActive(true);
         }
 
-        public void SetTalkMenuOn()
+        public virtual void SetTalkMenuOn()
         {
             ClearAllMenus();
             talkMenu.gameObject.SetActive(true);

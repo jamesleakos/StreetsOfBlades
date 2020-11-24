@@ -104,6 +104,11 @@ namespace BladesOfBellevue {
         public GameObject goToMarkerPrefab;
         private GameObject goToMarker;
 
+        private GameObject spyMarker;
+        public float spyMarkerLength = 5.0f;
+        private float endSpyMarkerTime;
+        public bool spyMarkerActive;
+
         #endregion
 
         #endregion
@@ -179,6 +184,8 @@ namespace BladesOfBellevue {
             base.Update();
 
             ServerCheckForPlayerInteraction();
+
+            if (Time.time > endSpyMarkerTime) spyMarker.SetActive(false);
 
             //skip further calls for remote clients
             if (!isLocalPlayer)
@@ -530,6 +537,16 @@ namespace BladesOfBellevue {
 
         #endregion
 
+        #region Inventory and Gold
+        [Client]
+        private void OnGoldAmountChanged ()
+        {
+            Debug.Log("Gold Amount Changed");
+        }
+
+
+        #endregion
+
         #region Buttons on Players
 
         protected void InteractionButtonSelection(List<PlayerInteractionButton> playerInteractionButtons)
@@ -561,7 +578,46 @@ namespace BladesOfBellevue {
                     
                     CmdSetDismiss(talkPlayer.gameObject);
                 }
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.paySeerToListDistrictsOfSpies)
+            {
+                if (talkPlayer != null)
+                {
+                    var tp = talkPlayer.GetComponent<ComputerPlayer>();
+                    if (tp.citizenType == CitizenType.seer)
+                    {
+                        var seer = talkPlayer.GetComponent<SeerBehavior>();
+                        //seer.PopulateWithInfo();
+                    }
+                }
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.paySeerToShowPictureOfSpy)
+            {
+                if (talkPlayer != null)
+                {
 
+                }
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.paySeerToTellIfTargeted)
+            {
+                if (talkPlayer != null)
+                {
+
+                }
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.paySeerToTellWhereTargetersAre)
+            {
+                if (talkPlayer != null)
+                {
+
+                }
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.paySeerToShowTargeters)
+            {
+                if (talkPlayer != null)
+                {
+
+                }
             }
             else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.assassinate)
             {
@@ -593,6 +649,36 @@ namespace BladesOfBellevue {
 
             return b;
         }
+
+        #endregion
+
+        #region UI on Player
+
+        [TargetRpc]
+        public void TargetTurnOnSpyMarker (NetworkConnection target)
+        {
+            spyMarker.SetActive(true);
+            spyMarkerActive = true;
+            endSpyMarkerTime = Time.time + spyMarkerLength;
+        }
+
+        private void TurnOffSpyMarker ()
+        {
+            spyMarker.SetActive(false);
+            spyMarkerActive = false;
+        }
+
+        #endregion
+
+        #region Managing HUD and UI
+
+        [ClientRpc]
+        public void RpcSpendGold (int newGoldAmount)
+        {
+            goldAmount = newGoldAmount;
+            GameManager.GetInstance().UpdatePlayerUI();
+        }
+
 
         #endregion
 

@@ -87,6 +87,11 @@ namespace BladesOfBellevue
             //play background music
             AudioManager.PlayMusic(1);
         }
+
+        public void UpdatePlayerUI ()
+        {
+
+        }
         
 
         /// <summary>

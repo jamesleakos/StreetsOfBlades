@@ -147,6 +147,10 @@ namespace BladesOfBellevue
         {
         }
 
+        public void UpdatePlayerUI ()
+        {
+            ui.UpdatePlayerUI();
+        }
 
         /// <summary>
         /// Returns the next team index a player should be assigned to.
