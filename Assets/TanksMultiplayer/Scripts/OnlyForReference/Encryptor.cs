@@ -8,7 +8,7 @@ using System.Text;
 using System.Security.Cryptography;
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Encrypts strings passed in by using a set obfuscation key as well as

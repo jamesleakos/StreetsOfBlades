@@ -6,7 +6,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Handles playback of background music, 2D and 3D one-shot clips during the game.

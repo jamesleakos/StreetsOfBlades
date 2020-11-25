@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// When attached to an gameobject containing ParticleSystems,

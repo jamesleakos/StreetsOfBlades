@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Script that makes child objects non-destroyable on scene changes.

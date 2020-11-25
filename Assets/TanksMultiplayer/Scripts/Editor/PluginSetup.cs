@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using System.Collections.Generic;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     public class PluginSetup : EditorWindow
     {

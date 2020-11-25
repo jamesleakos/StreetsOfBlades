@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Orientates the gameobject this script is attached to to always face the camera.

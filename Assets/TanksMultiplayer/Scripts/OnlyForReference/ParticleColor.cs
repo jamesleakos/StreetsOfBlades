@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Modifies the starting color of a particle system to the color passed in.

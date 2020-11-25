@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Custom implementation of the migration manager class.

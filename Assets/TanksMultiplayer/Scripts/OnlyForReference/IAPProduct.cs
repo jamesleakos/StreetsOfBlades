@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using UnityEngine.Purchasing;
 #endif
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Describes an in-app purchase product that can be bought by using Unity IAP.

@@ -6,7 +6,7 @@
 using Mirror;
 using Mirror.Discovery;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Custom implementation of the Unity Networking NetworkDiscovery class.

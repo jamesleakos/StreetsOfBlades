@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Analytics;
 #endif
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 { 
     /// <summary>
     /// Manager fo tracking user actions in-game and sending them to further processing

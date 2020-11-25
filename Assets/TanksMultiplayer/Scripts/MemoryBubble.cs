@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     [RequireComponent(typeof(BoxCollider2D), typeof(PlayerInteractionButton))]
     public class MemoryBubble : MonoBehaviour

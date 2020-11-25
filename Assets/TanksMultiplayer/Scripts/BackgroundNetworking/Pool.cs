@@ -9,7 +9,7 @@ using UnityEngine;
 using Mirror;
 using System;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Child class interacting and managed by the PoolManager.

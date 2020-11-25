@@ -7,7 +7,7 @@ using Mirror;
 using System.Linq;
 using TMPro;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {          
     /// <summary>
     /// Networked player class implementing movement control and shooting.

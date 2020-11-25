@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Advertisements;
 #endif
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Manager handling the full workflow of showing video ads, reacting

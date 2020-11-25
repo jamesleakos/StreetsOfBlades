@@ -6,7 +6,7 @@ using Mirror;
 using System.Linq;
 
 
-namespace BladesOfBellevue {
+namespace StreetsOfTheSicario {
 
     public class HumanPlayer : Player
     {
@@ -631,6 +631,10 @@ namespace BladesOfBellevue {
             else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.dismissMemoryBubble)
             {
                 Destroy(buttonToClick.gameObject);
+            }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.dismissBotInfo)
+            {
+                buttonToClick.gameObject.SetActive(false);
             }
         }
 

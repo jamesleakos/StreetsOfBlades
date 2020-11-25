@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Mirror;
 using System.Linq;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     public class PathManager : MonoBehaviour
     {

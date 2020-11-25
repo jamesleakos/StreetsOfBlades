@@ -10,7 +10,7 @@ using Mirror;
 using UnityEngine.Advertisements;
 #endif
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     /// <summary>
     /// Manages game workflow and provides high-level access to networked logic during a game.

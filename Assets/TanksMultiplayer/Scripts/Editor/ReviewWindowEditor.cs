@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {
     [InitializeOnLoad]
     public class ReviewWindowEditor : EditorWindow

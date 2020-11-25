@@ -7,7 +7,7 @@ using System.Collections;
 using UnityEngine;
 using Mirror;
 
-namespace BladesOfBellevue
+namespace StreetsOfTheSicario
 {          
     /// <summary>
     /// Responsible for spawning AI bots when in offline mode, otherwise gets disabled.

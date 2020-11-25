@@ -7,7 +7,7 @@ using Mirror;
 using System.Linq;
 
 
-namespace BladesOfBellevue {
+namespace StreetsOfTheSicario {
     public class Node : MonoBehaviour
     {
         public enum NodeType
