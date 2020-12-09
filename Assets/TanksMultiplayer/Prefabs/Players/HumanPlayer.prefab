@@ -34,7 +34,6 @@ MonoBehaviour:
   walkSpeed: 2
   runSpeed: 5
   amRunning: 0
-  targetingPlayer: {fileID: 0}
   talkingPlayer: {fileID: 0}
   teleporting: 0
   currentDistrict: 0
@@ -51,6 +50,10 @@ MonoBehaviour:
   talkPlayer: {fileID: 0}
   camFollow: {fileID: 0}
   assassinationClip: {fileID: 0}
+  goToMarkerPrefab: {fileID: 0}
+  spyMarker: {fileID: 911429737176694138}
+  spyMarkerLength: 5
+  spyMarkerActive: 0
 --- !u!114 &7531412284225407970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216,6 +219,11 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 493778927289436623, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 836161169178928921, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
       propertyPath: m_IsActive
@@ -250,6 +258,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SkinMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 8902168885820613980, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 8932938263068831100, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
@@ -330,6 +343,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &911429737176694138 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 493778927289436623, guid: f30ad63695c27504b8c2aa87564a6ccc,
+    type: 3}
+  m_PrefabInstance: {fileID: 755564415462274229}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2078241477889553528
 PrefabInstance:
   m_ObjectHideFlags: 0

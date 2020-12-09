@@ -18,6 +18,7 @@ public class PlayerInteractionButton : MonoBehaviour
         changeClothes,
         dismissMemoryBubble,
         dismissBotInfo,
+        barter,
 
         openSeerBarterMenu,
         paySeerToTellIfTargeted,

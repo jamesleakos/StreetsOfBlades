@@ -459,7 +459,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2156010790397972642
 Transform:
   m_ObjectHideFlags: 0
@@ -2149,6 +2149,14 @@ MonoBehaviour:
     type: 3}
   overhearingPlayers: []
   overhearDistance: 100
+  barterButton: {fileID: 0}
+  DistricttOfSpiesResults: {fileID: 1427751284709287598}
+  SeerResultText: {fileID: 425239774783698837}
+  AmITargetedButton: {fileID: 4799008372737234674}
+  WhereAreTargetersButton: {fileID: 5767253313613035610}
+  ShowTargetersButton: {fileID: 2569035872004951625}
+  PictureOfSpyButton: {fileID: 7721027614860498167}
+  SeerShowTargetersMenu: {fileID: 1427751284709287598}
 --- !u!1 &9112802337194412331
 GameObject:
   m_ObjectHideFlags: 0
@@ -2392,6 +2400,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 493778927289436623, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 836161169178928921, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
       propertyPath: m_IsActive
@@ -2425,9 +2438,14 @@ PrefabInstance:
     - target: {fileID: 3551068009350806485, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
       propertyPath: interactionButtonType
-      value: 11
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 4322028979587397055, guid: f30ad63695c27504b8c2aa87564a6ccc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4583235905608270181, guid: f30ad63695c27504b8c2aa87564a6ccc,
         type: 3}
       propertyPath: m_IsActive
       value: 0

@@ -320,11 +320,6 @@ namespace StreetsOfTheSicario
             SetTargetSelectedCircle();
         }
 
-        public virtual void GetKilled ()
-        {
-            ChangePlayerBehavior(PlayerBehaviorState.dead);            
-        }
-
         [ClientRpc]
         public virtual void RpcGetKilled()
         {
@@ -383,7 +378,7 @@ namespace StreetsOfTheSicario
         [Server]
         public virtual void GetKilled(HumanPlayer player)
         {
-
+            ChangePlayerBehavior(PlayerBehaviorState.dead);
         }
 
         #endregion

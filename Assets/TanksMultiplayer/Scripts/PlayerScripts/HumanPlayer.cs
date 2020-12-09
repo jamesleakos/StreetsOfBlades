@@ -104,7 +104,7 @@ namespace StreetsOfTheSicario {
         public GameObject goToMarkerPrefab;
         private GameObject goToMarker;
 
-        private GameObject spyMarker;
+        public GameObject spyMarker;
         public float spyMarkerLength = 5.0f;
         private float endSpyMarkerTime;
         public bool spyMarkerActive;
@@ -382,7 +382,7 @@ namespace StreetsOfTheSicario {
             {
                 Player killedPlayer = targetPlayer.GetComponent<Player>();
                 killedPlayer.playerBehaviorState = PlayerBehaviorState.dead;
-                killedPlayer.GetKilled();
+                killedPlayer.GetKilled(this);
                 killedPlayer.RpcGetKilled();
                 targetPlayer = null;
                 Debug.Log("Player Killed");
@@ -579,6 +579,14 @@ namespace StreetsOfTheSicario {
                     CmdSetDismiss(talkPlayer.gameObject);
                 }
             }
+            else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.barter)
+            {
+                if (talkPlayer != null)
+                {
+                    var tp = talkPlayer.GetComponent<ComputerPlayer>();
+                    if (tp.citizenType == CitizenType.seer) tp.SetBarterMenuOn();
+                }
+            }
             else if (buttonToClick.interactionButtonType == PlayerInteractionButton.InteractionButtonType.paySeerToListDistrictsOfSpies)
             {
                 if (talkPlayer != null)
@@ -677,12 +685,11 @@ namespace StreetsOfTheSicario {
         #region Managing HUD and UI
 
         [ClientRpc]
-        public void RpcSpendGold (int newGoldAmount)
+        public void RpcUpdateGold (int newGoldAmount)
         {
             goldAmount = newGoldAmount;
             GameManager.GetInstance().UpdatePlayerUI();
         }
-
 
         #endregion
 

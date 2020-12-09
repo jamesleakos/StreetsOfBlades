@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using Mirror;
 using System;
 using System.Linq;
+using TMPro;
+
 
 namespace StreetsOfTheSicario
 {
@@ -62,7 +64,26 @@ namespace StreetsOfTheSicario
 
         #region Citizen Behaviors
 
-        public Action citizenAction;
+
+
+        #endregion
+
+        #region UI
+        public Action OpenCitizenSpecificMenu;
+        public GameObject barterButton;
+
+        #region Seer UI
+        public GameObject DistricttOfSpiesResults;
+        public TextMeshProUGUI SeerResultText;
+
+        public GameObject AmITargetedButton;
+        public GameObject WhereAreTargetersButton;
+        public GameObject ShowTargetersButton;
+        public GameObject PictureOfSpyButton;
+        public GameObject SeerShowTargetersMenu;
+
+        #endregion
+
 
         #endregion
 
@@ -74,8 +95,11 @@ namespace StreetsOfTheSicario
             {
                 gameObject.AddComponent<SeerBehavior>();
                 var seerBehavior = gameObject.GetComponent<SeerBehavior>();
-                citizenAction += seerBehavior.ActionTriggerTest;
+                //OpenCitizenSpecificMenu += seerBehavior.MainSeerMenu;
                 seerBehavior.PopulateWithInfo(this);
+            } else if (citizenType == CitizenType.noble)
+            {
+                gameObject.AddComponent<NobleBehavior>();
             }
 
             if (!isServer) return;
@@ -167,6 +191,13 @@ namespace StreetsOfTheSicario
         {
             base.ClearAllMenus();
             ClearMemoryBubbles();
+        }
+
+        [Client]
+        public void SetBarterMenuOn()
+        {
+            ClearAllMenus();
+            OpenCitizenSpecificMenu();
         }
 
         #region Events and Memories
@@ -470,6 +501,19 @@ namespace StreetsOfTheSicario
             base.OnTeleport(node);
         }
 
-        #endregion        
+        #endregion
+
+        #region Dying
+
+        public override void GetKilled(HumanPlayer player)
+        {
+            base.GetKilled(player);
+            if (citizenType == CitizenType.noble)
+            {
+                gameObject.GetComponent<NobleBehavior>().PayKiller(player);
+            }
+        }
+
+        #endregion
     }
 }

@@ -37,7 +37,7 @@ namespace StreetsOfTheSicario
                 {
                     foreach (Player.CitizenColor citizenColor in Enum.GetValues(typeof(Player.CitizenColor)))
                     {
-                        if (testMode && testHelperInt > 1) return;
+                        if (testMode && testHelperInt > 0) return;
 
                         GameObject bot = Instantiate(botPrefab);
                         ComputerPlayer computerPlayer = bot.GetComponent<ComputerPlayer>();
@@ -52,6 +52,8 @@ namespace StreetsOfTheSicario
 
                         if (testMode) computerPlayer.minNextTalk = 1;
                         if (testMode) computerPlayer.maxNextTalk = 2;
+                        if (testMode) Debug.Log("making seer");
+                        if (testMode) computerPlayer.citizenType = Player.CitizenType.seer;
 
                         NetworkServer.Spawn(bot);
                         testHelperInt++;
